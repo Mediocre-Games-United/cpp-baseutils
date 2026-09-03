@@ -1,0 +1,13 @@
+include cpp-baseutils/compile/makefile-base
+
+RES_SRC_DIR := resources
+ENGINE_RES_SRC_DIR := src/engine/resources
+
+RES_BUILD_DIR := ${BUILD_DIR}/resources
+EXPORT_RES_DIR := $(EXPORT_DIR)/resources
+
+RES_SRCS := $(shell find $(RES_SRC_DIR) -type f)
+ENGINE_RES_SRCS := $(shell find $(ENGINE_RES_SRC_DIR) -type f)
+
+RES_OBJS := $(patsubst $(RES_SRC_DIR)/%,$(RES_BUILD_DIR)/%,$(RES_SRCS))
+RES_OBJS += $(patsubst $(ENGINE_RES_SRC_DIR)/%,$(RES_BUILD_DIR)/engine/%,$(ENGINE_RES_SRCS))

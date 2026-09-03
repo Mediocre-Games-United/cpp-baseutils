@@ -1,0 +1,10 @@
+include cpp-baseutils/compile/makefile-base
+
+SRCS := $(shell find $(SRC_DIR) -name '*.cpp')
+OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
+DEPS := $(ENGINE_OBJS:.o=.d)
+
+include cpp-baseutils/compile/makefile-obj
+
+link: link_base
+package: package_base link

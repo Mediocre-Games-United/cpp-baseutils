@@ -1,0 +1,6 @@
+include cpp-baseutils/compile/makefile-base
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXDEFS) -fPIC -c $< -o $@
+-include $(DEPS)

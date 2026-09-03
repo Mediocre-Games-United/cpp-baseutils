@@ -1,0 +1,11 @@
+include compile/makefile-base
+
+ITCH_CHANNEL := $(CHANNEL_NAME)$(CHANNEL_SUB)
+
+push_itchio: package can_push
+	@echo "$(ITCH_CHANNEL)"
+	@if [ -z "$(ITCH_USERNAME)" ] || [ -z "$(ITCH_PROJECT)" ]; then \
+		echo "itch.io variables not defined";\
+		exit 1;\
+	fi
+	butler push $(EXPORT_DIR) $(ITCH_USERNAME)/$(ITCH_PROJECT):$(ITCH_CHANNEL) --userversion "$(MAJOR).$(MINOR).$(PATCH)"

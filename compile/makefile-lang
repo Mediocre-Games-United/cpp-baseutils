@@ -1,0 +1,3 @@
+
+LANG_SRC_DIR := lang
+ENGINE_LANG_SRC_DIR := src/engine/lang
