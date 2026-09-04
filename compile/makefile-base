@@ -133,6 +133,7 @@ endif
 PKG_EXT_BAN ?= flp
 EXT_BAN_PATTERNS = $(foreach ext,$(PKG_EXT_BAN),-o -name "*.$(ext)")
 
+.PHONY: all package package_base can_push run clean copylibs_base build install
 
 all: package
 package_base:

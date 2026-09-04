@@ -11,7 +11,7 @@ namespace baseutils {
     class StringName {
     public:
         StringName() = default;
-        StringName(const letter *c) {
+        StringName(const char *c) {
             hash_index = hash(c);
         }
         StringName(string c) {
@@ -21,8 +21,8 @@ namespace baseutils {
 
         inline bool operator==(const StringName &other) const { return hash_index == other.hash_index; }
     private:
-        inline size_t hash(const letter *c) {
-            return std::hash<std::u32string_view>{}(std::u32string_view{c});
+        inline size_t hash(const char *c) {
+            return std::hash<std::string_view>{}(std::string_view{c});
         }
     };
 

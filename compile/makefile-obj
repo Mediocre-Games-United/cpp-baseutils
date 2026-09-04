@@ -4,7 +4,3 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CXXDEFS) -c $< -o $@
 -include $(DEPS)
-
-link_base: $(OBJS)
-	@mkdir -p $(EXPORT_DIR)
-	$(CXX) $(WIN_META_RES) $< $(CXXFLAGS) $(LDFLAGS) $(SHARED_DEFS) -o $(TARGET)
