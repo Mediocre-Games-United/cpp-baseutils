@@ -1,43 +1,45 @@
 #ifndef STRING_MATH_HPP
 #define STRING_MATH_HPP
 
+#include "base_types.hpp"
+
 #include <algorithm>
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace baseutils {
     class StringName {
     public:
         StringName() = default;
-        StringName(const char *c) {
+        StringName(const letter *c) {
             hash_index = hash(c);
         }
-        StringName(std::string c) {
+        StringName(string c) {
             hash_index = hash(c.c_str());
         }
         size_t hash_index;
 
         inline bool operator==(const StringName &other) const { return hash_index == other.hash_index; }
     private:
-        inline size_t hash(const char *c) {
-            return std::hash<std::string_view>{}(std::string_view{c});
+        inline size_t hash(const letter *c) {
+            return std::hash<std::u32string_view>{}(std::u32string_view{c});
         }
     };
 
-    inline std::string string_uppercase(std::string s) {
-        std::transform(s.begin(),s.end(),s.begin(),[](char c) {
+    inline string string_uppercase(string s) {
+        std::transform(s.begin(),s.end(),s.begin(),[](letter c) {
             return std::toupper(c);
         });
         return s;
     }
-    inline std::vector<std::string> string_split(std::string s,std::string splitter) {
-        std::vector<std::string> res;
+    inline std::vector<string> string_split(string s,string splitter) {
+        std::vector<string> res;
 
         size_t p = 0;
         size_t i = 0;
         size_t si = 0;
         size_t sc = splitter.size();
-        for (char c : s) {
+        for (letter c : s) {
             if (c != splitter[si]) {
                 i += 1;
                 si = 0;

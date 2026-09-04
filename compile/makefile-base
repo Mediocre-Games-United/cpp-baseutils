@@ -101,8 +101,9 @@ TARGET := $(EXPORT_DIR)/launcher$(F_EXT)
 
 SRC_DIR := src
 
-INCDIRS := $(shell find $(SRC_DIR) include \
+INCDIRS := $(shell find src include \
   \( -type d \( -name gcc -o -name mingw \) -prune \) -o -type d -print 2>/dev/null | sort -u)
+INCDIRS += $(shell find cpp-baseutils include -type d -print 2>/dev/null | sort -u)
 ifeq ($(WIN),1)
 	INCDIRS += $(shell find src/engine/mingw -type d)
 else
