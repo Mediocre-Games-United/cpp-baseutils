@@ -9,7 +9,7 @@
 #include <cstring>
 #include <format>
 
-namespace baseutils {
+namespace cbu {
     inline uint8_t decode_u8(BYTEARRAY &bytes,size_t offset) {
         if (offset >= bytes.size()) return 0;
 
@@ -242,7 +242,7 @@ namespace baseutils {
             void *list = write_callback(obj,&size,&len);
             void *og = list;
 
-            baseutils::log_debug(std::format("Repeating at len {}, size {}",len,size));
+            cbu::log_debug(std::format("Repeating at len {}, size {}",len,size));
             for (size_t i = 0; i < len; i ++) {
                 // log_debug(std::format("Repeating page {}",list));
                 for (auto s : sub_sections) {
@@ -250,9 +250,9 @@ namespace baseutils {
                 }
                 list = (void*) ((char*) list + size);
             }
-            baseutils::log_debug("Repeating done");
+            cbu::log_debug("Repeating done");
             write_del(og);
-            baseutils::log_debug("Del done");
+            cbu::log_debug("Del done");
         }
     };
     class DataBinarySection : public BinaryFileSection {
@@ -399,7 +399,7 @@ namespace baseutils {
     };
     class BinaryFileFormat {
     public:
-        BinaryFileFormat(std::vector<BinaryFileVersion*> v,const char *e) : versions(v), latest_version(v.size() - 1), ext(baseutils::StringName(baseutils::string_uppercase(e))) {};
+        BinaryFileFormat(std::vector<BinaryFileVersion*> v,const char *e) : versions(v), latest_version(v.size() - 1), ext(cbu::StringName(cbu::string_uppercase(e))) {};
         ~BinaryFileFormat() {
             for (size_t i = 0; i < versions.size(); i ++) {
                 delete versions[i];
@@ -445,7 +445,7 @@ namespace baseutils {
 
             return 0;
         }
-        baseutils::StringName ext;
+        cbu::StringName ext;
 
         BYTEARRAY obj_data;
     };

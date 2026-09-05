@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-namespace baseutils {
+namespace cbu {
     class StringName {
     public:
         StringName() = default;
@@ -59,8 +59,8 @@ namespace baseutils {
     }
 }
 template<>
-struct std::hash<baseutils::StringName> {
-    size_t operator()(const baseutils::StringName& s) const noexcept {
+struct std::hash<cbu::StringName> {
+    size_t operator()(const cbu::StringName& s) const noexcept {
         return std::hash<size_t>{}(s.hash_index);
     }
 };
