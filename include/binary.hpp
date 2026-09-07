@@ -217,14 +217,28 @@ namespace cbu {
     };
     class RepeatingBinarySection : public BinaryFileSection {
     public:
-        RepeatingBinarySection(void *(*w)(void *obj,size_t *size,size_t *len),void (*wd)(void *obj),std::vector<BinaryFileSection*> sub) : BinaryFileSection(sub), write_callback(w), write_del(wd) {};
+        RepeatingBinarySection(void *(*w)(void *obj,size_t *size,size_t *len),void (*wd)(void *obj),std::vector<BinaryFileSection*> sub,bool unlimited = true) : BinaryFileSection(sub), infinite(unlimited), write_callback(w), write_del(wd) {};
 
+        bool infinite;
         void *(*write_callback)(void*,size_t*,size_t*);
         void (*write_del)(void*);
         bool sub_sections_enabled() override { return false; }
         size_t read_from_buffer(void *obj,BYTEARRAY &data,size_t offset) override {
             size_t total = 0;
+            size_t index = 0;
+            size_t count = 0;
+            if (!infinite) {
+                uint16_t v = decode_u16(data,offset);
+                count = v;
+                log_debug(std::format("Limited repeating section: found {} entries",v));
+
+                total += 2;
+                offset += 2;
+            }
+
             while (offset < data.size()) {
+                if (!infinite && index >= count) break;
+                index += 1;
                 for (BinaryFileSection *s : sub_sections) {
                     size_t size = s->read_from_buffer(obj,data,offset);
 
@@ -241,6 +255,10 @@ namespace cbu {
 
             void *list = write_callback(obj,&size,&len);
             void *og = list;
+
+            if (!infinite) {
+                encode_u16(data,len);
+            }
 
             cbu::log_debug(std::format("Repeating at len {}, size {}",len,size));
             for (size_t i = 0; i < len; i ++) {

@@ -2,10 +2,13 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 
 using string = std::string;
 using letter = char32_t;
 using fpath = std::filesystem::path;
+template <typename T>
+using vector = std::vector<T>;
 
 struct color_t {
     color_t() {}
