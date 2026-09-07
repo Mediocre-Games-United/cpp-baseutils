@@ -76,9 +76,12 @@ namespace cbu {
         *target = cwd;
         return true;
     }
-    inline bool cli_get_valid_int(int *target,int min,int max) {
+    inline bool cli_get_valid_int(int *target,int min,int max,bool default_enabled = false,int default_value = 0) {
         string str = cbu::cli_get_string();
-        if (str.empty()) return false;
+        if (str.empty()) {
+            if (default_enabled) { *target = default_value; return true; }
+            return false;
+        }
         int raw = atoi(str.c_str());
         if (raw < min) return false;
         if (raw > max) return false;
