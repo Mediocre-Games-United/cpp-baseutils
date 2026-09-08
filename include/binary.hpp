@@ -254,6 +254,7 @@ namespace cbu {
             size_t size = 0;
 
             void *list = write_callback(obj,&size,&len);
+            cbu::log_debug(std::format("Repeating at page {}",list));
             void *og = list;
 
             if (!infinite) {
@@ -262,7 +263,7 @@ namespace cbu {
 
             cbu::log_debug(std::format("Repeating at len {}, size {}",len,size));
             for (size_t i = 0; i < len; i ++) {
-                // log_debug(std::format("Repeating page {}",list));
+                log_debug(std::format("Repeating page {}",list));
                 for (auto s : sub_sections) {
                     s->write_to_buffer(list,data);
                 }
