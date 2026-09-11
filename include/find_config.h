@@ -7,6 +7,8 @@
 #if __has_include("config.h")
 #define CONFIG_FILE_USED "config.h"
 #include "config.h"
+#else
+#warning no config.h file found!!
 #endif
 
 #ifndef CONFIG_FILE_USED

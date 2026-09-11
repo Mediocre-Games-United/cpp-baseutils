@@ -5,11 +5,6 @@
 #include <cstdlib>
 
 namespace cbu {
-    inline int sign(double d) {
-        if (d > 0) return 1;
-        else if (d < 0) return -1;
-        return 0;
-    }
     inline double angle_clamp(double a) {
         a = fmod(a + PI, PI * 2.0);
         if (a <= 0) a += PI * 2.0;

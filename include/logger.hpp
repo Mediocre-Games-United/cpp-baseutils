@@ -1,5 +1,4 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#pragma once
 
 #include "base_types.hpp"
 #include <stdexcept>
@@ -34,5 +33,3 @@ namespace cbu {
         #endif
     }
 }
-
-#endif
