@@ -21,6 +21,10 @@ struct color_t {
     float g = 1.0;
     float b = 1.0;
     float a = 1.0;
+
+    inline color_t operator*(const color_t &other) {
+        return color_t(r * other.r,g * other.g,b * other.b,a * other.a);
+    }
 };
 
 
