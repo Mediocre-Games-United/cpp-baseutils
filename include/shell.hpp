@@ -160,11 +160,17 @@ namespace cbu {
                 return 0;
             }
 
-            log_error(
-                false,
-                "Shell: command '" + command + "' exited with status " +
-                std::to_string(exit_code) + " with output " + *output
-            );
+            if (output) {
+                log_error(
+                    false,
+                    "Shell: command '" + command + "' exited with status " +
+                    std::to_string(exit_code) + " with output " + *output
+                );
+            } else log_error(
+                    false,
+                    "Shell: command '" + command + "' exited with status " +
+                    std::to_string(exit_code)
+                );
 
             return exit_code;
         }
