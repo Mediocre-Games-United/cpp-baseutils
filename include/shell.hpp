@@ -7,6 +7,7 @@
 #include <cerrno>
 #include <cstring>
 #include <format>
+#include <iostream>
 #include <string>
 
 #include <sys/types.h>
@@ -35,11 +36,8 @@ namespace cbu {
         log_verbose(std::format("Shell: running command {}",command));
 
         if (output == nullptr) {
-            log_error(false, "execute_command received a null output pointer");
-            return -1;
-        }
-
-        output->clear();
+            log_info("Output is NULL! streaming output to stdout...");
+        } else output->clear();
 
         int pipe_fds[2];
 
@@ -111,7 +109,12 @@ namespace cbu {
             );
 
             if (bytes_read > 0) {
-                output->append(
+                if (!output) {
+                    string bfr = "";
+                    bfr.append(buffer,static_cast<string::size_type>(bytes_read));
+
+                    std::cout << bfr;
+                } else output->append(
                     buffer,
                     static_cast<string::size_type>(bytes_read)
                 );
