@@ -56,6 +56,17 @@ public:
     inline vec operator/(const double &other) {
         return vec(x / other,y / other);
     }
+    inline vec &operator+=(const vec &other) {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+    inline vec &operator-=(const vec &other) {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
     inline double magnitude() {
         return std::sqrt(x * x + y * y);
     }
