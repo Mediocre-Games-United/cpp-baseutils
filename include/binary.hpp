@@ -276,8 +276,10 @@ namespace cbu {
     };
     class DataBinarySection : public BinaryFileSection {
     public:
-        DataBinarySection(void (*c)(void*,void*),void *(*f)(void),void (*ff)(void *obj),std::vector<BinaryFileSection*> sub) : BinaryFileSection(sub), read_callback(c), factory(f), factory_free(ff) {};
+        DataBinarySection(void (*c)(void*,void*),void *(*f)(void),void (*ff)(void *obj),std::vector<BinaryFileSection*> sub) : BinaryFileSection(sub), write_callback(NULL), read_callback(c), factory(f), factory_free(ff) {};
+        DataBinarySection(void (*c)(void*,void*),void *(*f)(void),void (*ff)(void *obj),void (*w)(void*,void*),std::vector<BinaryFileSection*> sub) : BinaryFileSection(sub), write_callback(w), read_callback(c), factory(f), factory_free(ff) {};
 
+        void (*write_callback)(void*,void*);
         void (*read_callback)(void*,void*);
         void *(*factory)(void);
         void (*factory_free)(void*);
@@ -294,6 +296,16 @@ namespace cbu {
             return size;
         }
         void write_to_buffer(void *obj,BYTEARRAY &data) override {
+            if (write_callback) {
+                void *f = factory();
+                write_callback(obj,f);
+                for (auto &s : sub_sections) {
+                    s->write_to_buffer(f,data);
+                }
+                factory_free(f);
+
+                return;
+            }
             for (auto s : sub_sections) {
                 s->write_to_buffer(obj,data);
             }
@@ -388,6 +400,24 @@ namespace cbu {
             uint32_t i = write_callback(obj);
 
             encode_u32(data,i);
+        }
+    };
+    class FloatBinarySection : public BinaryFileSection {
+    public:
+        FloatBinarySection(void (*c)(void *object,float value),float (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
+
+        void (*read_callback)(void*,float);
+        float (*write_callback)(void*);
+        size_t read_from_buffer(void *obj,BYTEARRAY &data,size_t offset) override {
+            float value = decode_float(data,offset);
+            read_callback(obj,value);
+
+            return 4;
+        }
+        void write_to_buffer(void *obj,BYTEARRAY &data) override {
+            float i = write_callback(obj);
+
+            encode_float(data,i);
         }
     };
 
