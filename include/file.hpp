@@ -178,7 +178,7 @@ namespace cbu {
 
     #ifdef EDITOR
     inline fpath get_editor_path() {
-        return get_parent_dir() / "../";
+        return get_parent_dir().parent_path().parent_path();
     }
     #endif
     inline fpath get_exe_path() {
