@@ -95,4 +95,7 @@ namespace cbu {
         else if (i < 0) return -1;
         return 0;
     }
+    inline bool same_sign(double x,double y) {
+        return f_sign(x) == f_sign(y);
+    }
 }
