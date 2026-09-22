@@ -8,5 +8,5 @@ include cpp-baseutils/compile/makefile-obj
 
 link: $(OBJS)
 	@mkdir -p $(EXPORT_DIR)
-	$(CXX) --as-needed $(WIN_META_RES) $^ $(CXXFLAGS) $(LDFLAGS) $(SHARED_DEFS) -o $(TARGET)
+	$(CXX) -Wl,--as-needed $(WIN_META_RES) $^ $(CXXFLAGS) $(LDFLAGS) $(SHARED_DEFS) -o $(TARGET)
 package: package_base link
