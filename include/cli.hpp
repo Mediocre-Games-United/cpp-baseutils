@@ -89,9 +89,12 @@ namespace cbu {
 
         return true;
     }
-    inline bool cli_get_valid_bool(bool *target) {
+    inline bool cli_get_valid_bool(bool *target,bool default_enabled = false,bool default_value = false) {
         string raw = cbu::cli_get_string();
-        if (raw.empty()) return false;
+        if (raw.empty()) {
+            if (default_enabled) return default_value;
+            return false;
+        }
         raw = cbu::string_uppercase(raw);
         if (raw == "TRUE" || raw == "YES" || raw == "Y" || raw == "T") {
             *target = true;
@@ -100,6 +103,7 @@ namespace cbu {
             *target = false;
             return true;
         }
+        if (default_enabled) return default_value;
 
         return false;
     }
