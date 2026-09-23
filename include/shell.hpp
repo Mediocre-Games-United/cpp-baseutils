@@ -294,7 +294,7 @@ namespace cbu {
             CloseHandle(process_info.hProcess);
 
             if (exit_code == 0) {
-                log_success("Shell command completed successfully");
+                log_verbose("Shell command completed successfully");
                 return 0;
             }
 
@@ -464,7 +464,7 @@ namespace cbu {
             int exit_code = WEXITSTATUS(wait_status);
 
             if (exit_code == 0) {
-                log_success("Shell command completed successfully");
+                // log_verbose("Shell command completed successfully");
                 return 0;
             }
 
