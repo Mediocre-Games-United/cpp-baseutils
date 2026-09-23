@@ -17,6 +17,8 @@
 
 #else
 
+#include "pty.h"
+#include "poll.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -319,7 +321,6 @@ namespace cbu {
     }
 
     #else
-
     inline uint8_t run_shell_command(
         fpath directory,
         string command,
@@ -333,27 +334,18 @@ namespace cbu {
             output->clear();
         }
 
-        int pipe_fds[2];
-
-        if (pipe(pipe_fds) == -1) {
-            log_error(
-                false,
-                "Could not create command output pipe: " +
-                string(std::strerror(errno))
-            );
-
-            return static_cast<uint8_t>(-1);
-        }
-
-        pid_t child_pid = fork();
+        int pty_master = -1;
+        pid_t child_pid = forkpty(
+            &pty_master,
+            nullptr,
+            nullptr,
+            nullptr
+        );
 
         if (child_pid == -1) {
-            close(pipe_fds[0]);
-            close(pipe_fds[1]);
-
             log_error(
                 false,
-                "Could not fork command process: " +
+                "Could not create PTY: " +
                 string(std::strerror(errno))
             );
 
@@ -361,56 +353,91 @@ namespace cbu {
         }
 
         if (child_pid == 0) {
-            close(pipe_fds[0]);
+            // The child already has the PTY slave connected to:
+            //
+            //   stdin  = PTY slave
+            //   stdout = PTY slave
+            //   stderr = PTY slave
+            //
+            // Do not close pty_master here; forkpty has already arranged
+            // the child's standard streams.
 
-            if (dup2(pipe_fds[1], STDOUT_FILENO) == -1 ||
-                dup2(pipe_fds[1], STDERR_FILENO) == -1) {
-                _exit(127);
-                }
+            string directory_string = path_to_utf8(directory);
 
-                close(pipe_fds[1]);
-
-            log_debug(std::format(
-                "Shell: entering directory {}",
-                path_to_utf8(directory)
-            ));
-
-            if (chdir(path_to_utf8(directory).c_str()) == -1) {
+            if (!directory_string.empty() &&
+                chdir(directory_string.c_str()) == -1) {
                 dprintf(
                     STDERR_FILENO,
                     "chdir failed: %s\n",
                     std::strerror(errno)
                 );
-                _exit(127);
-            }
-
-            execl(
-                "/bin/sh",
-                "sh",
-                "-c",
-                command.c_str(),
-                  static_cast<char*>(nullptr)
-            );
-
-            dprintf(
-                STDERR_FILENO,
-                "exec failed: %s\n",
-                std::strerror(errno)
-            );
-
             _exit(127);
+                }
+
+                execl(
+                    "/bin/sh",
+                    "sh",
+                    "-c",
+                    command.c_str(),
+                      static_cast<char*>(nullptr)
+                );
+
+                dprintf(
+                    STDERR_FILENO,
+                    "exec failed: %s\n",
+                    std::strerror(errno)
+                );
+
+                _exit(127);
         }
 
-        close(pipe_fds[1]);
+        // Parent owns the PTY master.
+        bool stdin_open = true;
+        bool pty_open = true;
 
         char buffer[4096];
 
-        for (;;) {
-            ssize_t bytes_read = read(
-                pipe_fds[0],
-                buffer,
-                sizeof(buffer)
-            );
+        while (pty_open) {
+            pollfd poll_fds[2]{};
+            nfds_t poll_count = 0;
+
+            const nfds_t pty_index = poll_count++;
+
+            poll_fds[pty_index].fd = pty_master;
+            poll_fds[pty_index].events = POLLIN;
+
+            nfds_t stdin_index = 0;
+
+            if (stdin_open) {
+                stdin_index = poll_count++;
+
+                poll_fds[stdin_index].fd = STDIN_FILENO;
+                poll_fds[stdin_index].events = POLLIN;
+            }
+
+            int poll_result;
+
+            do {
+                poll_result = poll(poll_fds, poll_count, -1);
+            } while (poll_result == -1 && errno == EINTR);
+
+            if (poll_result == -1) {
+                log_warn(
+                    "Could not poll PTY: " +
+                    string(std::strerror(errno))
+                );
+                break;
+            }
+
+            // Read output from the child.
+            if (pty_open &&
+                (poll_fds[pty_index].revents &
+                (POLLIN | POLLHUP | POLLERR))) {
+                ssize_t bytes_read = read(
+                    pty_master,
+                    buffer,
+                    sizeof(buffer)
+                );
 
             if (bytes_read > 0) {
                 if (output == nullptr) {
@@ -422,27 +449,65 @@ namespace cbu {
                         static_cast<string::size_type>(bytes_read)
                     );
                 }
+            } else if (bytes_read == -1 &&
+                (errno == EIO || errno == EPIPE)) {
+                // Linux commonly reports EIO when the PTY slave closes.
+                pty_open = false;
+                } else if (bytes_read == 0) {
+                    pty_open = false;
+                } else if (bytes_read == -1 && errno != EINTR) {
+                    log_warn(
+                        "Could not read command output: " +
+                        string(std::strerror(errno))
+                    );
+                    pty_open = false;
+                }
+                }
 
-                continue;
-            }
+                // Read input from the parent and forward it to the child.
+                if (stdin_open &&
+                    (poll_fds[stdin_index].revents &
+                    (POLLIN | POLLHUP | POLLERR))) {
+                    ssize_t bytes_read = read(
+                        STDIN_FILENO,
+                        buffer,
+                        sizeof(buffer)
+                    );
 
-            if (bytes_read == 0) {
-                break;
-            }
+                if (bytes_read > 0) {
+                    ssize_t total_written = 0;
 
-            if (errno == EINTR) {
-                continue;
-            }
+                    while (total_written < bytes_read) {
+                        ssize_t bytes_written = write(
+                            pty_master,
+                            buffer + total_written,
+                            static_cast<std::size_t>(
+                                bytes_read - total_written
+                            )
+                        );
 
-            log_warn(
-                "Could not read command output: " +
-                string(std::strerror(errno))
-            );
-
-            break;
+                        if (bytes_written > 0) {
+                            total_written += bytes_written;
+                        } else if (bytes_written == -1 &&
+                            errno == EINTR) {
+                            continue;
+                            } else {
+                                stdin_open = false;
+                                break;
+                            }
+                    }
+                } else if (bytes_read == 0) {
+                    // Parent stdin reached EOF. Closing the PTY master would
+                    // also lose the ability to read the child's remaining
+                    // output, so just stop forwarding input.
+                    stdin_open = false;
+                } else if (errno != EINTR) {
+                    stdin_open = false;
+                }
+                    }
         }
 
-        close(pipe_fds[0]);
+        close(pty_master);
 
         int wait_status = 0;
 
@@ -464,7 +529,6 @@ namespace cbu {
             int exit_code = WEXITSTATUS(wait_status);
 
             if (exit_code == 0) {
-                // log_verbose("Shell command completed successfully");
                 return 0;
             }
 
@@ -501,6 +565,7 @@ namespace cbu {
         log_error(false, "Shell command ended in an unknown state");
         return static_cast<uint8_t>(-1);
     }
+
 
     #endif
 
