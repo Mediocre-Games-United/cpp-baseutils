@@ -10,19 +10,46 @@
 namespace cbu {
     class StringName {
     public:
-        StringName() = default;
-        StringName(const char *c) {
-            hash_index = hash(c);
-        }
-        StringName(string c) {
-            hash_index = hash(c.c_str());
-        }
-        size_t hash_index;
+        constexpr StringName() noexcept
+        : hash_index(0) {}
 
-        inline bool operator==(const StringName &other) const { return hash_index == other.hash_index; }
+        constexpr StringName(const char* c) noexcept
+        : hash_index(hash(std::string_view{c})) {}
+
+        constexpr StringName(std::string_view s) noexcept
+        : hash_index(hash(s)) {}
+
+        // Runtime-only convenience constructor
+        StringName(const std::string& s) noexcept
+        : hash_index(hash(s)) {}
+
+        constexpr bool operator==(const StringName& other) const noexcept {
+            return hash_index == other.hash_index;
+        }
+
+        std::size_t hash_index;
     private:
-        inline size_t hash(const char *c) {
-            return std::hash<std::string_view>{}(std::string_view{c});
+
+        static constexpr std::size_t hash(std::string_view s) noexcept {
+            // FNV-1a constants for size_t-sized hashes
+            constexpr std::size_t offset_basis =
+            sizeof(std::size_t) == 8
+            ? std::size_t{14695981039346656037ull}
+            : std::size_t{2166136261u};
+
+            constexpr std::size_t prime =
+            sizeof(std::size_t) == 8
+            ? std::size_t{1099511628211ull}
+            : std::size_t{16777619u};
+
+            std::size_t result = offset_basis;
+
+            for (unsigned char ch : s) {
+                result ^= ch;
+                result *= prime;
+            }
+
+            return result;
         }
     };
 
