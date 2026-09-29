@@ -3,6 +3,7 @@
 #include <cmath>
 #include <filesystem>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 using string = std::string;
@@ -10,6 +11,8 @@ using letter = char32_t;
 using fpath = std::filesystem::path;
 template <typename T>
 using vector = std::vector<T>;
+template <typename K,typename T>
+using umap = std::unordered_map<K,T>;
 
 # define PI          3.141592653589793238462643383279502884L /* pi */
 
