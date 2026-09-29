@@ -36,7 +36,7 @@ namespace cbu {
     }
 
     template <class T>
-    inline void vector_shift_back(std::vector<T>& v, std::size_t n) {
+    inline void vector_shift_back(std::vector<T> &v, std::size_t n) {
         if (n == 0) return;
         if (n >= v.size()) {
             v.clear();
@@ -46,8 +46,15 @@ namespace cbu {
         v.resize(v.size() - n);
     }
 
+    template<typename T>
+    inline void vector_erase_index_fast(vector<T> &objects,const size_t i) {
+        objects[i] = std::move(objects.back());
+        objects.pop_back();
+    }
+
     template<typename obj>
-    class FastListPointer {
+    // Fast pointer unique unordered list,
+    class FPUList {
     public:
         inline void insert(obj *n) {
             indexes[n] = objects.size();
@@ -58,9 +65,13 @@ namespace cbu {
 
             const size_t i = indexes[r];
             indexes[objects.back()] = i;
-            objects[i] = std::move(objects.back());
             indexes.erase(r);
-            objects.pop_back();
+
+            vector_erase_index_fast(objects,i);
+
+        }
+        inline bool has(obj *r) {
+            return indexes.contains(r);
         }
         inline void reserve(size_t c) {
             objects.reserve(c);
@@ -87,8 +98,35 @@ namespace cbu {
         size_t size() const {
             return objects.size();
         }
-    private:
+
         vector<obj*> objects{};
         umap<obj*,size_t> indexes{};
+    };
+    template<typename obj,typename other>
+    class FPUListLinked {
+    public:
+        inline void insert(obj *n,other *o) {
+            list.insert(n);
+            olist.emplace_back(o);
+        }
+        inline other *remove(obj *n) {
+            if (!list.has(n)) return NULL;
+            size_t i = list.indexes[n];
+
+            auto o = olist[i];
+            vector_erase_index_fast(olist,i);
+            list.remove(n);
+
+            return o;
+        }
+
+        inline auto begin() { return olist.begin(); }
+        inline auto begin() const { return olist.begin(); }
+        inline auto end() { return olist.end(); }
+        inline auto end() const { return olist.end(); }
+        size_t size() const { return olist.size(); }
+
+        vector<other*> olist{};
+        FPUList<obj> list{};
     };
 }

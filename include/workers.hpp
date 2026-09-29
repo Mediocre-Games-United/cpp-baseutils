@@ -22,7 +22,7 @@ namespace cbu {
     using ThreadCount = uint16_t;
 
     struct WorkerState {
-        std::counting_semaphore<> s = std::counting_semaphore<>(0);
+        std::counting_semaphore<> s{0};
         std::mutex lock{};
         volatile bool threads_quit = false;
         ThreadCount count = 0;
@@ -30,13 +30,28 @@ namespace cbu {
         std::condition_variable work_amount{};
         std::mutex work_mutex{};
 
-        std::vector<std::thread> threads{};
+        vector<std::thread> threads{};
         std::queue<WorkObject> sync_queue{};
         int sync_count = 0;
         std::queue<WorkObject> async_queue{};
 
         std::atomic<int> workers_work_done = 0;
         int workers_work_count = 0;
+
+        inline void sync_pre() {
+            lock.lock();
+        }
+        inline void sync_post(size_t c) {
+            work_count += c;
+            sync_count += c;
+            lock.unlock();
+            if (c <= 0) return;
+
+            s.release(c);
+
+            std::unique_lock lk(work_mutex);
+            work_amount.wait(lk,[this]{ return work_count == 0; });
+        }
     };
     WorkerState *get_state();
 
@@ -78,9 +93,9 @@ namespace cbu {
         if (state->work_count > 0) return;
         state->work_amount.notify_all();
     }
-    inline void run_tasks_sync(std::vector<std::optional<WorkObject>> &objs) {
+    inline void run_tasks_sync(vector<std::optional<WorkObject>> &objs) {
         auto state = get_state();
-        state->lock.lock();
+        state->sync_pre();
         size_t c = 0;
         for (std::optional<WorkObject> &obj : objs) {
             if (!obj) continue;
@@ -89,16 +104,38 @@ namespace cbu {
                 .call = obj->call,
                 .finished = tasks_sync_cb,
             });
-            state->work_count += 1;
-            state->sync_count += 1;
             c += 1;
         }
-        state->lock.unlock();
-        if (c <= 0) return;
-        state->s.release(c);
 
-        std::unique_lock lk(state->work_mutex);
-        state->work_amount.wait(lk,[&state]{ return state->work_count == 0; });
+        state->sync_post(c);
+    }
+    inline void run_tasks_sync(vector<WorkObject> &objs) {
+        auto state = get_state();
+        state->sync_pre();
+        size_t c = 0;
+        for (WorkObject &obj : objs) {
+            state->sync_queue.push((WorkObject) {
+                .call = obj.call,
+                .finished = tasks_sync_cb,
+            });
+            c += 1;
+        }
+
+        state->sync_post(c);
+    }
+    inline void run_tasks_sync(vector<WorkObject*> &objs) {
+        auto state = get_state();
+        state->sync_pre();
+        size_t c = 0;
+        for (WorkObject *obj : objs) {
+            state->sync_queue.push((WorkObject) {
+                .call = obj->call,
+                .finished = tasks_sync_cb,
+            });
+            c += 1;
+        }
+
+        state->sync_post(c);
     }
     inline void run_tasks_async(std::vector<WorkObject> &objs,void (*cb)(void)) {
         auto state = get_state();

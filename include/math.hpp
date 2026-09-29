@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_types.hpp"
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
 
@@ -97,5 +98,10 @@ namespace cbu {
     }
     inline bool same_sign(double x,double y) {
         return f_sign(x) == f_sign(y);
+    }
+
+    template<typename T>
+    inline T lerp(T &src,T &tgt,double alpha) {
+        return src + (tgt - src) * alpha;
     }
 }
