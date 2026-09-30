@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <filesystem>
+#include <format>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -83,7 +84,22 @@ public:
     }
 
     inline static vec zero() { return vec(0,0); }
+
+    operator string() const {
+        return std::format("V2[{},{}]",x,y);
+    }
 };
+template<>
+struct std::formatter<vec> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    auto format(const vec& v, std::format_context& ctx) const {
+        return std::format_to(ctx.out(),"{}",string(v));
+    }
+};
+
 class rect {
 public:
     rect(): x(0), y(0), w(0), h(0) {}

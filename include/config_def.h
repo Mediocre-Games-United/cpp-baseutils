@@ -20,3 +20,10 @@
 #ifndef VERSION_PATCH
 #define VERSION_PATCH 0
 #endif
+
+#ifndef COLLISION_CELL_SIZE
+#define COLLISION_CELL_SIZE 1024
+#endif
+#ifndef UNIT_SCALE
+#define UNIT_SCALE 64
+#endif
