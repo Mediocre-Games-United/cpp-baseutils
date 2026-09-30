@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef FIND_CONFIG
+#error Please include find_config.h instead!
+#endif
+
 #define CMP_NAME "mgu"
 #define APP_NAME "<no app name found, define APP_NAME in config.h!>"
 #define APP_NAME_FULL "<no full app name found, define APP_NAME_FULL in config.h!>"
@@ -25,5 +29,5 @@
 #define COLLISION_CELL_SIZE 1024
 #endif
 #ifndef UNIT_SCALE
-#define UNIT_SCALE 64
+#define UNIT_SCALE 64.0
 #endif

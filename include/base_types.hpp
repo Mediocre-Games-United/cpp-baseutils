@@ -70,6 +70,16 @@ public:
         y -= other.y;
         return *this;
     }
+    inline vec &operator*=(const double &n) {
+        x *= n;
+        y *= n;
+        return *this;
+    }
+    inline vec &operator/=(const double &n) {
+        x /= n;
+        y /= n;
+        return *this;
+    }
 
     inline double magnitude() {
         return std::sqrt(x * x + y * y);

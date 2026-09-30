@@ -1,5 +1,7 @@
 #pragma once
 
+#define FIND_CONFIG
+
 #if __has_include("config_def.h")
 #define CONFIG_FILE_USED "config_def.h"
 #include "config_def.h"
