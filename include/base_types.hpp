@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cmath>
 #include <filesystem>
 #include <format>
@@ -120,5 +121,8 @@ public:
     double w;
     double h;
 };
+
+template <typename X,typename Base>
+inline bool is_of_type(Base *p) { assert(p); return dynamic_cast<X*>(p); }
 
 #define VEC_ZERO vec(0,0)
