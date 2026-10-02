@@ -19,9 +19,25 @@ namespace cbu {
 
     inline string cli_get_string() {
         string str{};
-        std::getline(std::cin,str);
+        if (std::getline(std::cin,str)) {
+            return str;
+        }
 
-        return str;
+        if (std::cin.eof()) {
+            std::cin.clear();
+            return {};
+        }
+
+        // Recover from Ctrl+C or another interrupted read.
+        std::cin.clear();
+
+        // Optional: discard the rest of the current line.
+        std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(),
+                        '\n'
+        );
+
+        return {};
     }
 
     inline bool cli_get_valid_string(string *target) {
