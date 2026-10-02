@@ -12,6 +12,16 @@
 
 #define STUDIO_NAME "Mediocre Games United"
 
+#ifndef GIT_COMMIT
+#define GIT_COMMIT "unknown"
+#endif
+#ifndef BUILD_TIME
+#define BUILD_TIME "unknown date"
+#endif
+
+#define BUILD_STRING (GIT_COMMIT "@" BUILD_TIME)
+
+
 #define INIT_CANVAS_W 800
 #define INIT_CANVAS_H 600
 
@@ -24,6 +34,27 @@
 #ifndef VERSION_PATCH
 #define VERSION_PATCH 0
 #endif
+
+#ifdef EDITOR
+#define VERSION_TYPE "editor"
+#else
+#ifdef RELEASE
+#define VERSION_TYPE "prod"
+#else
+#ifdef BETA
+#define VERSION_TYPE "beta"
+
+#endif
+#endif
+#endif
+
+#ifndef VERSION_TYPE
+#define VERSION_TYPE "standard"
+#endif
+
+#define STR_X(v) #v
+#define STR(v) STR_X(v)
+#define VERSION_STRING ("v" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_PATCH) "-" VERSION_TYPE)
 
 #ifndef COLLISION_CELL_SIZE
 #define COLLISION_CELL_SIZE 1024

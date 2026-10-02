@@ -1,9 +1,11 @@
 #pragma once
 
 #include "base_types.hpp"
+#include "cli.hpp"
 #include "logger.hpp"
 #include <format>
 #include <unordered_set>
+#include "find_config.h"
 
 namespace cbu {
     struct parser_flag {
@@ -49,11 +51,34 @@ namespace cbu {
         }
     };
 
+    inline string format_flag_name(parser_flag &fl) {
+        string full = "";
+        full += std::format("[-{}] ",fl.short_k);
+        if (!fl.long_k.empty()) full += std::format("[--{}] ",fl.long_k);
+
+        return full;
+    }
     inline void set_parser_help(parser_output &pt,vector<parser_flag> flags,vector<parser_val> vals) {
         pt.valid = true;
         pt.can_proceed = false;
+        string full = "[--version] Show the version information\n[-h] [--help] Show this list\n";
+        for (auto &s : flags) {
+            full += format_flag_name(s);
 
-        cbu::log_info("This is the help text");
+            if (s.help.empty()) full += "\n";
+            else full += std::format("{}\n",s.help);
+        }
+        for (auto &s : vals) {
+            s.
+        }
+
+        cbu::cli_output(std::format("---\n{}---",full));
+    }
+    inline void set_parser_version(parser_output &pt) {
+        pt.valid = true;
+        pt.can_proceed = false;
+
+        cbu::cli_output(std::format("---\nVersion: {}\n---",VERSION_STRING));
     }
     inline parser_output parse_args(int argc,char **argv,vector<parser_flag> flags,vector<parser_val> vals) {
         parser_output output{};
@@ -76,6 +101,9 @@ namespace cbu {
 
                 if (lg == "help") {
                     set_parser_help(output,flags,vals);
+                    return output;
+                } if (lg == "version") {
+                    set_parser_version(output);
                     return output;
                 }
                 std::optional<parser_flag> fl{};
