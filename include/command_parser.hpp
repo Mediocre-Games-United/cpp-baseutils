@@ -69,7 +69,13 @@ namespace cbu {
             else full += std::format("{}\n",s.help);
         }
         for (auto &s : vals) {
-            s.
+            full += format_flag_name(s.flag);
+
+            for (size_t i = 0; i < s.argc; i ++) {
+                full += "{argument} ";
+            }
+            if (s.flag.help.empty()) full += "\n";
+            else full += std::format("{}\n",s.flag.help);
         }
 
         cbu::cli_output(std::format("---\n{}---",full));
@@ -83,7 +89,7 @@ namespace cbu {
     inline parser_output parse_args(int argc,char **argv,vector<parser_flag> flags,vector<parser_val> vals) {
         parser_output output{};
 
-        // size_t val_count = 0;
+        size_t val_count = 0;
         for (int i = 1; i < argc; i ++) {
             string cur = argv[i];
 
@@ -114,10 +120,20 @@ namespace cbu {
                     break;
                 }
                 if (!fl) {
-                    output.valid = false;
-                    output.err = std::format("Unknown long flag {}",lg);
+                    std::optional<parser_val> vl{};
+                    for (auto &s : vals) {
+                        if (s.flag.long_k != lg) continue;
 
-                    break;
+                        vl = s;
+                        break;
+                    }
+                    if (!vl) {
+                        output.valid = false;
+                        output.err = std::format("Unknown long flag {}",lg);
+                        break;
+                    }
+
+                    continue;
                 }
                 output.flags.insert(fl.value().short_k);
 
