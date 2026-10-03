@@ -230,7 +230,7 @@ namespace cbu {
             if (!infinite) {
                 uint16_t v = decode_u16(data,offset);
                 count = v;
-                log_debug(std::format("Limited repeating section: found {} entries",v));
+                // log_debug(std::format("Limited repeating section: found {} entries",v));
 
                 total += 2;
                 offset += 2;
@@ -254,24 +254,24 @@ namespace cbu {
             size_t size = 0;
 
             void *list = write_callback(obj,&size,&len);
-            cbu::log_debug(std::format("Repeating at page {}",list));
+            // cbu::log_debug(std::format("Repeating at page {}",list));
             void *og = list;
 
             if (!infinite) {
                 encode_u16(data,len);
             }
 
-            cbu::log_debug(std::format("Repeating at len {}, size {}",len,size));
+            // cbu::log_debug(std::format("Repeating at len {}, size {}",len,size));
             for (size_t i = 0; i < len; i ++) {
-                log_debug(std::format("Repeating page {}",list));
+                // log_debug(std::format("Repeating page {}",list));
                 for (auto s : sub_sections) {
                     s->write_to_buffer(list,data);
                 }
                 list = (void*) ((char*) list + size);
             }
-            cbu::log_debug("Repeating done");
+            // cbu::log_debug("Repeating done");
             write_del(og);
-            cbu::log_debug("Del done");
+            // cbu::log_debug("Del done");
         }
     };
     class DataBinarySection : public BinaryFileSection {

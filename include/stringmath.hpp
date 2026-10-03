@@ -84,6 +84,22 @@ namespace cbu {
 
         return res;
     }
+
+    inline void trim(std::string& value)
+    {
+        while (!value.empty() &&
+            std::isspace(static_cast<unsigned char>(value.back()))) {
+            value.pop_back();
+            }
+
+            std::size_t first = 0;
+        while (first < value.size() &&
+            std::isspace(static_cast<unsigned char>(value[first]))) {
+            ++first;
+            }
+
+            value.erase(0, first);
+    }
 }
 template<>
 struct std::hash<cbu::StringName> {
