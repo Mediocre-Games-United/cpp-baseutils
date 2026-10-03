@@ -27,7 +27,7 @@ namespace cbu {
     };
     struct parser_output {
         std::unordered_set<char> flags{};
-        umap<string,string> values{};
+        umap<char,string> values{};
         string cmd = "";
         string err = "";
         bool valid = false;
@@ -90,10 +90,17 @@ namespace cbu {
         parser_output output{};
 
         size_t val_count = 0;
+        char val_char;
         for (int i = 1; i < argc; i ++) {
             string cur = argv[i];
 
             cbu::log_debug(cur);
+
+            if (val_count > 0) {
+                val_count -= 1;
+                output.values[val_char] = cur;
+                continue;
+            }
 
             if (cur[0] != '-') {
                 if (output.cmd.empty()) output.cmd = cur;
@@ -132,6 +139,14 @@ namespace cbu {
                         output.err = std::format("Unknown long flag {}",lg);
                         break;
                     }
+                    if (val_count > 0) {
+                        output.valid = false;
+                        output.err = std::format("Cannot have multiple value flags in same cluster");
+                        break;
+                    }
+                    val_count = vl.value().argc;
+                    val_char = vl.value().flag.short_k;
+                    output.values[val_char] = "<none>";
 
                     continue;
                 }
