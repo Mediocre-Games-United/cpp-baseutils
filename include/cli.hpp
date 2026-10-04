@@ -54,7 +54,6 @@ namespace cbu {
     }
 
     inline bool cli_get_valid_string(string *target) {
-        CLI_GET_MUTEX;
         string raw = cbu::cli_get_string();
         if (raw.empty()) return false;
 
@@ -66,7 +65,6 @@ namespace cbu {
 #else
     inline bool cli_get_valid_dirpath(fpath *target,fpath cwd = "/") {
 #endif
-        CLI_GET_MUTEX;
         cli_output("Welcome to the directory select utility!");
         string cmd;
         while (true) {
@@ -108,7 +106,6 @@ namespace cbu {
         return true;
     }
     inline bool cli_get_valid_int(int *target,int min,int max,bool default_enabled = false,int default_value = 0) {
-        CLI_GET_MUTEX;
         string str = cbu::cli_get_string();
         if (str.empty()) {
             if (default_enabled) { *target = default_value; return true; }
@@ -122,7 +119,6 @@ namespace cbu {
         return true;
     }
     inline bool cli_get_valid_bool(bool *target,bool default_enabled = false,bool default_value = false) {
-        CLI_GET_MUTEX;
         string raw = cbu::cli_get_string();
         if (raw.empty()) {
             if (default_enabled) return default_value;
