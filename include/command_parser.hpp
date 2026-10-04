@@ -171,10 +171,28 @@ namespace cbu {
                     break;
                 }
                 if (!fl) {
-                    output.valid = false;
-                    output.err = std::format("Unknown short flag {}",c);
+                    std::optional<parser_val> vl{};
+                    for (auto &s : vals) {
+                        if (s.flag.short_k != c) continue;
 
-                    return output;
+                        vl = s;
+                        break;
+                    }
+                    if (!vl) {
+                        output.valid = false;
+                        output.err = std::format("Unknown short flag {}",c);
+                        break;
+                    }
+                    if (val_count > 0) {
+                        output.valid = false;
+                        output.err = std::format("Cannot have multiple value flags in same cluster");
+                        break;
+                    }
+                    val_count = vl.value().argc;
+                    val_char = vl.value().flag.short_k;
+                    output.values[val_char] = "<none>";
+
+                    continue;
                 }
                 output.flags.insert(fl.value().short_k);
             }
