@@ -8,142 +8,444 @@
 #include <cstdint>
 #include <cstring>
 #include <format>
+#include <type_traits>
 
 namespace cbu {
-    inline U8 decode_u8(BYTEARRAY &bytes,size_t offset) {
-        if (offset >= bytes.size()) return 0;
+    namespace binary_detail {
 
-        return bytes.at(offset);
-    }
-    inline I8 decode_s8(BYTEARRAY &bytes,size_t offset) {
-        if (offset + 1 > bytes.size()) return 0;
-        I8 s;
-        memcpy(&s,bytes.data() + offset,1);
+        template <typename T>
+        concept UnsignedInteger =
+        std::is_integral_v<T> &&
+        std::is_unsigned_v<T>;
 
-        return s;
-    }
-    inline U16 decode_u16(BYTEARRAY &bytes,size_t offset) {
-        if (offset + 2 > bytes.size()) return 0;
-        U16 s;
-        memcpy(&s,bytes.data() + offset,2);
+        template <typename T>
+        concept SignedInteger =
+        std::is_integral_v<T> &&
+        std::is_signed_v<T>;
 
-        return s;
-    }
-    inline U32 decode_u32(BYTEARRAY &bytes,size_t offset) {
-        if (offset + 4 > bytes.size()) return 0;
-        U32 s;
-        memcpy(&s,bytes.data() + offset,4);
-
-        return s;
-    }
-    inline F32 decode_F32(BYTEARRAY &bytes,size_t offset) {
-        if (offset + 4 > bytes.size()) return 0;
-        F32 s;
-        memcpy(&s,bytes.data() + offset,4);
-
-        return s;
-    }
-    inline string decode_string(BYTEARRAY &bytes,size_t offset,size_t *len) {
-        U16 s = decode_u16(bytes,offset);
-        offset += 2;
-        if (offset + size_t(s) > bytes.size() || s == 0) {*len = 2; return string(""); }
-
-        char *s_bytes = (char*) malloc(sizeof(char) * (s + 1));
-        for (U16 i = 0; i < s; i ++) {
-            s_bytes[i] = bytes[offset + i];
+        template <typename T>
+        inline bool has_bytes(
+            const BYTEARRAY& bytes,
+            size_t offset
+        )
+        {
+            return offset <= bytes.size() &&
+            sizeof(T) <= bytes.size() - offset;
         }
-        s_bytes[s] = 0;
 
-        string str = string(s_bytes);
-        free(s_bytes);
-        *len = s + 2;
-        return str;
+        template <UnsignedInteger T>
+        inline T load_little_endian(
+            const BYTEARRAY& bytes,
+            size_t offset
+        )
+        {
+            if (!has_bytes<T>(bytes, offset))
+                return T{0};
+
+            T value{0};
+
+            for (size_t i = 0; i < sizeof(T); ++i) {
+                value |= static_cast<T>(bytes[offset + i]) << (i * 8);
+            }
+
+            return value;
+        }
+
+        template <UnsignedInteger T>
+        inline void store_little_endian(
+            BYTEARRAY& bytes,
+            T value
+        )
+        {
+            for (size_t i = 0; i < sizeof(T); ++i) {
+                bytes.push_back(
+                    static_cast<U8>((value >> (i * 8)) & T{0xff})
+                );
+            }
+        }
+
+        template <SignedInteger T>
+        inline T load_signed_little_endian(
+            const BYTEARRAY& bytes,
+            size_t offset
+        )
+        {
+            using U = std::make_unsigned_t<T>;
+
+            // Important: load U, not T.
+            const U raw = load_little_endian<U>(bytes, offset);
+
+            T value{};
+            std::memcpy(&value, &raw, sizeof(value));
+            return value;
+        }
+
+        template <SignedInteger T>
+        inline void store_signed_little_endian(
+            BYTEARRAY& bytes,
+            T value
+        )
+        {
+            using U = std::make_unsigned_t<T>;
+
+            U raw{};
+            std::memcpy(&raw, &value, sizeof(raw));
+
+            store_little_endian<U>(bytes, raw);
+        }
+
+        template <typename Float, typename UInt>
+        requires (
+            std::is_floating_point_v<Float> &&
+            std::is_unsigned_v<UInt> &&
+            sizeof(Float) == sizeof(UInt)
+        )
+        inline Float load_float_little_endian(
+            const BYTEARRAY& bytes,
+            size_t offset
+        )
+        {
+            const UInt raw = load_little_endian<UInt>(bytes, offset);
+
+            Float value{};
+            std::memcpy(&value, &raw, sizeof(value));
+            return value;
+        }
+
+        template <typename Float, typename UInt>
+        requires (
+            std::is_floating_point_v<Float> &&
+            std::is_unsigned_v<UInt> &&
+            sizeof(Float) == sizeof(UInt)
+        )
+        inline void store_float_little_endian(
+            BYTEARRAY& bytes,
+            Float value
+        )
+        {
+            UInt raw{};
+            std::memcpy(&raw, &value, sizeof(raw));
+
+            store_little_endian<UInt>(bytes, raw);
+        }
+
+    } // namespace binary_detail
+
+    // -----------------------------------------------------------------------------
+    // Unsigned integers
+    // -----------------------------------------------------------------------------
+
+    inline U8 decode_u8(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::has_bytes<U8>(bytes, offset)
+        ? bytes[offset]
+        : U8{0};
     }
-    inline color_t decode_color(BYTEARRAY &bytes,size_t offset) {
-        return color_t(
-            decode_F32(bytes,offset),
-            decode_F32(bytes,offset + 4),
-            decode_F32(bytes,offset + 8),
-            decode_F32(bytes,offset + 12)
+
+    inline U16 decode_u16(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_little_endian<U16>(bytes, offset);
+    }
+
+    inline U32 decode_u32(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_little_endian<U32>(bytes, offset);
+    }
+
+    inline U64 decode_u64(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_little_endian<U64>(bytes, offset);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Signed integers
+    // -----------------------------------------------------------------------------
+
+    inline S8 decode_s8(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_signed_little_endian<S8>(bytes, offset);
+    }
+
+    inline S16 decode_s16(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_signed_little_endian<S16>(bytes, offset);
+    }
+
+    inline S32 decode_s32(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_signed_little_endian<S32>(bytes, offset);
+    }
+
+    inline S64 decode_s64(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_signed_little_endian<S64>(bytes, offset);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Floating-point values
+    // -----------------------------------------------------------------------------
+
+    inline F32 decode_F32(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_float_little_endian<F32,U32>(bytes, offset);
+    }
+
+    inline F64 decode_F64(const BYTEARRAY& bytes, size_t offset)
+    {
+        return binary_detail::load_float_little_endian<F64,U64>(bytes, offset);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Length-prefixed strings and byte arrays
+    //
+    // Format:
+    //   U16 length
+    //   length bytes
+    // -----------------------------------------------------------------------------
+
+    inline string decode_string(
+        const BYTEARRAY& bytes,
+        size_t offset,
+        size_t* len
+    )
+    {
+        if (len != nullptr)
+            *len = 0;
+
+        if (!binary_detail::has_bytes<U16>(bytes, offset))
+            return {};
+
+        const U16 size = decode_u16(bytes, offset);
+        const size_t data_offset = offset + sizeof(U16);
+
+        if (data_offset > bytes.size() ||
+            static_cast<size_t>(size) > bytes.size() - data_offset)
+        {
+            if (len != nullptr)
+                *len = sizeof(U16);
+
+            return {};
+        }
+
+        if (len != nullptr)
+            *len = sizeof(U16) + static_cast<size_t>(size);
+
+        return string(
+            reinterpret_cast<const char*>(bytes.data() + data_offset),
+                      static_cast<size_t>(size)
         );
     }
-    inline BYTEARRAY decode_bytearray(BYTEARRAY &bytes,size_t offset,size_t *len) {
-        U16 s = decode_u16(bytes,offset);
-        offset += 2;
-        if (offset + size_t(s) > bytes.size() || s == 0) {*len = 2; return {}; }
 
-        *len = s + 2;
-        BYTEARRAY val;
-        val.insert(val.begin(),bytes.begin() + offset,bytes.begin() + offset + s);
+    inline BYTEARRAY decode_bytearray(
+        const BYTEARRAY& bytes,
+        size_t offset,
+        size_t* len
+    )
+    {
+        if (len != nullptr)
+            *len = 0;
 
-        return val;
+        if (!binary_detail::has_bytes<U16>(bytes, offset))
+            return {};
+
+        const U16 size = decode_u16(bytes, offset);
+        const size_t data_offset = offset + sizeof(U16);
+
+        if (data_offset > bytes.size() ||
+            static_cast<size_t>(size) > bytes.size() - data_offset)
+        {
+            if (len != nullptr)
+                *len = sizeof(U16);
+
+            return {};
+        }
+
+        if (len != nullptr)
+            *len = sizeof(U16) + static_cast<size_t>(size);
+
+        return BYTEARRAY(
+            bytes.begin() + static_cast<std::ptrdiff_t>(data_offset),
+                         bytes.begin() + static_cast<std::ptrdiff_t>(
+                             data_offset + static_cast<size_t>(size)
+                         )
+        );
+    }
+
+    // -----------------------------------------------------------------------------
+    // Color
+    // -----------------------------------------------------------------------------
+
+    inline color_t decode_color(
+        const BYTEARRAY& bytes,
+        size_t offset
+    )
+    {
+        return color_t(
+            decode_F32(bytes, offset),
+                       decode_F32(bytes, offset + 4),
+                       decode_F32(bytes, offset + 8),
+                       decode_F32(bytes, offset + 12)
+        );
+    }
+
+    // -----------------------------------------------------------------------------
+    // Encoding
+    // -----------------------------------------------------------------------------
+
+    inline size_t encode_u8(
+        BYTEARRAY& bytes,
+        U8 value
+    )
+    {
+        binary_detail::store_little_endian<U8>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_s8(
+        BYTEARRAY& bytes,
+        S8 value
+    )
+    {
+        binary_detail::store_signed_little_endian<S8>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_u16(
+        BYTEARRAY& bytes,
+        U16 value
+    )
+    {
+        binary_detail::store_little_endian<U16>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_s16(
+        BYTEARRAY& bytes,
+        S16 value
+    )
+    {
+        binary_detail::store_signed_little_endian<S16>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_u32(
+        BYTEARRAY& bytes,
+        U32 value
+    )
+    {
+        binary_detail::store_little_endian<U32>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_s32(
+        BYTEARRAY& bytes,
+        S32 value
+    )
+    {
+        binary_detail::store_signed_little_endian<S32>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_u64(
+        BYTEARRAY& bytes,
+        U64 value
+    )
+    {
+        binary_detail::store_little_endian<U64>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_s64(
+        BYTEARRAY& bytes,
+        S64 value
+    )
+    {
+        binary_detail::store_signed_little_endian<S64>(bytes, value);
+        return sizeof(value);
+    }
+
+    inline size_t encode_F32(
+        BYTEARRAY& bytes,
+        F32 value
+    )
+    {
+        binary_detail::store_float_little_endian<F32, U32>(
+            bytes,
+            value
+        );
+
+        return sizeof(value);
+    }
+
+    inline size_t encode_F64(
+        BYTEARRAY& bytes,
+        F64 value
+    )
+    {
+        binary_detail::store_float_little_endian<F64, U64>(
+            bytes,
+            value
+        );
+
+        return sizeof(value);
     }
 
 
+    inline size_t encode_string(
+        BYTEARRAY& bytes,
+        const string& value
+    )
+    {
+        constexpr size_t max_length = std::numeric_limits<U16>::max();
 
-    inline size_t encode_u8(BYTEARRAY &bytes,U8 value) {
-        bytes.push_back(value);
-        return 1;
+        const size_t length = value.size() > max_length
+        ? max_length
+        : value.size();
+
+        encode_u16(bytes, static_cast<U16>(length));
+
+        bytes.insert(
+            bytes.end(),
+                     reinterpret_cast<const U8*>(value.data()),
+                     reinterpret_cast<const U8*>(value.data()) + length
+        );
+
+        return sizeof(U16) + length;
     }
-    inline size_t encode_s8(BYTEARRAY &bytes,I8 value) {
-        bytes.push_back(value);
-        return 1;
+
+    inline size_t encode_bytearray(
+        BYTEARRAY& bytes,
+        const BYTEARRAY& value
+    )
+    {
+        constexpr size_t max_length = std::numeric_limits<U16>::max();
+
+        const size_t length = value.size() > max_length
+        ? max_length
+        : value.size();
+
+        encode_u16(bytes, static_cast<U16>(length));
+
+        bytes.insert(
+            bytes.end(),
+                     value.begin(),
+                     value.begin() + static_cast<std::ptrdiff_t>(length)
+        );
+
+        return sizeof(U16) + length;
     }
-    inline size_t encode_u16(BYTEARRAY &bytes,U16 value) {
-        U8 b[2];
-        memcpy(&b,&value,2);
 
-        bytes.push_back(b[0]);
-        bytes.push_back(b[1]);
+    inline size_t encode_color(
+        BYTEARRAY& bytes,
+        const color_t& value
+    )
+    {
+        encode_F32(bytes, value.r);
+        encode_F32(bytes, value.g);
+        encode_F32(bytes, value.b);
+        encode_F32(bytes, value.a);
 
-        return 2;
-    }
-    inline size_t encode_u32(BYTEARRAY &bytes,U32 value) {
-        U8 b[4];
-        memcpy(&b,&value,4);
-
-        bytes.push_back(b[0]);
-        bytes.push_back(b[1]);
-        bytes.push_back(b[2]);
-        bytes.push_back(b[3]);
-
-        return 4;
-    }
-    inline size_t encode_F32(BYTEARRAY &bytes,F32 value) {
-        U8 b[4];
-        memcpy(&b,&value,4);
-
-        bytes.push_back(b[0]);
-        bytes.push_back(b[1]);
-        bytes.push_back(b[2]);
-        bytes.push_back(b[3]);
-
-        return 4;
-    }
-    inline size_t encode_string(BYTEARRAY &bytes,string value) {
-        BYTEARRAY val;
-        U16 l = value.size();
-        val.resize(l + 2);
-        memcpy(val.data(),&l,2);
-        memcpy(val.data() + 2,value.data(),l);
-
-        bytes.insert(bytes.end(),val.begin(),val.end());
-
-        return l + 2;
-    }
-    inline size_t encode_color(BYTEARRAY &bytes,color_t value) {
-        encode_F32(bytes,value.r);
-        encode_F32(bytes,value.g);
-        encode_F32(bytes,value.b);
-        encode_F32(bytes,value.a);
-
-        return 16;
-    }
-    inline size_t encode_bytearray(BYTEARRAY &bytes,BYTEARRAY value) {
-        encode_u16(bytes,value.size());
-
-        bytes.insert(bytes.end(),value.begin(),value.end());
-        return value.size() + 2;
+        return sizeof(F32) * 4;
     }
 
 
