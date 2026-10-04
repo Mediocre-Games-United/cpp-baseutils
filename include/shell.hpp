@@ -112,7 +112,7 @@ namespace cbu {
      *
      * Do not pass untrusted, unvalidated user input directly to command.
      */
-    inline uint8_t run_shell_command(
+    inline U8 run_shell_command(
         fpath directory,
         string command,
         string* output
@@ -143,7 +143,7 @@ namespace cbu {
                 detail::windows_error_message(GetLastError())
             );
 
-        return static_cast<uint8_t>(-1);
+        return static_cast<U8>(-1);
             }
 
             // The parent must not accidentally pass the read side to the child.
@@ -157,7 +157,7 @@ namespace cbu {
                     detail::windows_error_message(GetLastError())
                 );
 
-                return static_cast<uint8_t>(-1);
+                return static_cast<U8>(-1);
             }
 
             std::wstring working_directory =
@@ -171,7 +171,7 @@ namespace cbu {
                 CloseHandle(write_handle);
 
                 log_error(false, "Could not convert working directory to UTF-16");
-                return static_cast<uint8_t>(-1);
+                return static_cast<U8>(-1);
             }
 
             if (command_line.empty()) {
@@ -179,7 +179,7 @@ namespace cbu {
                 CloseHandle(write_handle);
 
                 log_error(false, "Could not convert command to UTF-16");
-                return static_cast<uint8_t>(-1);
+                return static_cast<U8>(-1);
             }
 
             // CreateProcess may modify the command-line buffer.
@@ -230,7 +230,7 @@ namespace cbu {
                     detail::windows_error_message(GetLastError())
                 );
 
-                return static_cast<uint8_t>(-1);
+                return static_cast<U8>(-1);
             }
 
             char buffer[4096];
@@ -289,7 +289,7 @@ namespace cbu {
                 CloseHandle(process_info.hThread);
                 CloseHandle(process_info.hProcess);
 
-                return static_cast<uint8_t>(-1);
+                return static_cast<U8>(-1);
             }
 
             CloseHandle(process_info.hThread);
@@ -317,11 +317,11 @@ namespace cbu {
                 );
             }
 
-            return static_cast<uint8_t>(exit_code);
+            return static_cast<U8>(exit_code);
     }
 
     #else
-    inline uint8_t run_shell_command(
+    inline U8 run_shell_command(
         fpath directory,
         string command,
         string* output
@@ -349,7 +349,7 @@ namespace cbu {
                 string(std::strerror(errno))
             );
 
-            return static_cast<uint8_t>(-1);
+            return static_cast<U8>(-1);
         }
 
         if (child_pid == 0) {
@@ -522,7 +522,7 @@ namespace cbu {
                 string(std::strerror(errno))
             );
 
-            return static_cast<uint8_t>(-1);
+            return static_cast<U8>(-1);
         }
 
         if (WIFEXITED(wait_status)) {
@@ -549,7 +549,7 @@ namespace cbu {
                 );
             }
 
-            return static_cast<uint8_t>(exit_code);
+            return static_cast<U8>(exit_code);
         }
 
         if (WIFSIGNALED(wait_status)) {
@@ -559,11 +559,11 @@ namespace cbu {
                 std::to_string(WTERMSIG(wait_status))
             );
 
-            return static_cast<uint8_t>(-1);
+            return static_cast<U8>(-1);
         }
 
         log_error(false, "Shell command ended in an unknown state");
-        return static_cast<uint8_t>(-1);
+        return static_cast<U8>(-1);
     }
 
 

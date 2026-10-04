@@ -10,46 +10,46 @@
 #include <format>
 
 namespace cbu {
-    inline uint8_t decode_u8(BYTEARRAY &bytes,size_t offset) {
+    inline U8 decode_u8(BYTEARRAY &bytes,size_t offset) {
         if (offset >= bytes.size()) return 0;
 
         return bytes.at(offset);
     }
-    inline int8_t decode_s8(BYTEARRAY &bytes,size_t offset) {
+    inline I8 decode_s8(BYTEARRAY &bytes,size_t offset) {
         if (offset + 1 > bytes.size()) return 0;
-        int8_t s;
+        I8 s;
         memcpy(&s,bytes.data() + offset,1);
 
         return s;
     }
-    inline uint16_t decode_u16(BYTEARRAY &bytes,size_t offset) {
+    inline U16 decode_u16(BYTEARRAY &bytes,size_t offset) {
         if (offset + 2 > bytes.size()) return 0;
-        uint16_t s;
+        U16 s;
         memcpy(&s,bytes.data() + offset,2);
 
         return s;
     }
-    inline uint32_t decode_u32(BYTEARRAY &bytes,size_t offset) {
+    inline U32 decode_u32(BYTEARRAY &bytes,size_t offset) {
         if (offset + 4 > bytes.size()) return 0;
-        uint32_t s;
+        U32 s;
         memcpy(&s,bytes.data() + offset,4);
 
         return s;
     }
-    inline float decode_float(BYTEARRAY &bytes,size_t offset) {
+    inline F32 decode_F32(BYTEARRAY &bytes,size_t offset) {
         if (offset + 4 > bytes.size()) return 0;
-        float s;
+        F32 s;
         memcpy(&s,bytes.data() + offset,4);
 
         return s;
     }
     inline string decode_string(BYTEARRAY &bytes,size_t offset,size_t *len) {
-        uint16_t s = decode_u16(bytes,offset);
+        U16 s = decode_u16(bytes,offset);
         offset += 2;
         if (offset + size_t(s) > bytes.size() || s == 0) {*len = 2; return string(""); }
 
         char *s_bytes = (char*) malloc(sizeof(char) * (s + 1));
-        for (uint16_t i = 0; i < s; i ++) {
+        for (U16 i = 0; i < s; i ++) {
             s_bytes[i] = bytes[offset + i];
         }
         s_bytes[s] = 0;
@@ -61,14 +61,14 @@ namespace cbu {
     }
     inline color_t decode_color(BYTEARRAY &bytes,size_t offset) {
         return color_t(
-            decode_float(bytes,offset),
-            decode_float(bytes,offset + 4),
-            decode_float(bytes,offset + 8),
-            decode_float(bytes,offset + 12)
+            decode_F32(bytes,offset),
+            decode_F32(bytes,offset + 4),
+            decode_F32(bytes,offset + 8),
+            decode_F32(bytes,offset + 12)
         );
     }
     inline BYTEARRAY decode_bytearray(BYTEARRAY &bytes,size_t offset,size_t *len) {
-        uint16_t s = decode_u16(bytes,offset);
+        U16 s = decode_u16(bytes,offset);
         offset += 2;
         if (offset + size_t(s) > bytes.size() || s == 0) {*len = 2; return {}; }
 
@@ -81,16 +81,16 @@ namespace cbu {
 
 
 
-    inline size_t encode_u8(BYTEARRAY &bytes,uint8_t value) {
+    inline size_t encode_u8(BYTEARRAY &bytes,U8 value) {
         bytes.push_back(value);
         return 1;
     }
-    inline size_t encode_s8(BYTEARRAY &bytes,int8_t value) {
+    inline size_t encode_s8(BYTEARRAY &bytes,I8 value) {
         bytes.push_back(value);
         return 1;
     }
-    inline size_t encode_u16(BYTEARRAY &bytes,uint16_t value) {
-        uint8_t b[2];
+    inline size_t encode_u16(BYTEARRAY &bytes,U16 value) {
+        U8 b[2];
         memcpy(&b,&value,2);
 
         bytes.push_back(b[0]);
@@ -98,8 +98,8 @@ namespace cbu {
 
         return 2;
     }
-    inline size_t encode_u32(BYTEARRAY &bytes,uint32_t value) {
-        uint8_t b[4];
+    inline size_t encode_u32(BYTEARRAY &bytes,U32 value) {
+        U8 b[4];
         memcpy(&b,&value,4);
 
         bytes.push_back(b[0]);
@@ -109,8 +109,8 @@ namespace cbu {
 
         return 4;
     }
-    inline size_t encode_float(BYTEARRAY &bytes,float value) {
-        uint8_t b[4];
+    inline size_t encode_F32(BYTEARRAY &bytes,F32 value) {
+        U8 b[4];
         memcpy(&b,&value,4);
 
         bytes.push_back(b[0]);
@@ -122,7 +122,7 @@ namespace cbu {
     }
     inline size_t encode_string(BYTEARRAY &bytes,string value) {
         BYTEARRAY val;
-        uint16_t l = value.size();
+        U16 l = value.size();
         val.resize(l + 2);
         memcpy(val.data(),&l,2);
         memcpy(val.data() + 2,value.data(),l);
@@ -132,10 +132,10 @@ namespace cbu {
         return l + 2;
     }
     inline size_t encode_color(BYTEARRAY &bytes,color_t value) {
-        encode_float(bytes,value.r);
-        encode_float(bytes,value.g);
-        encode_float(bytes,value.b);
-        encode_float(bytes,value.a);
+        encode_F32(bytes,value.r);
+        encode_F32(bytes,value.g);
+        encode_F32(bytes,value.b);
+        encode_F32(bytes,value.a);
 
         return 16;
     }
@@ -153,10 +153,10 @@ namespace cbu {
         txt.reserve(len * 5);
         size_t row = 0;
         size_t row_index = 0;
-        uint8_t byte;
+        U8 byte;
         char bfr[5];
         for (size_t i = 0; i < len; i ++) {
-            memcpy(&byte,((uint8_t*) b) + i,1);
+            memcpy(&byte,((U8*) b) + i,1);
             sprintf(bfr,"%02X ",byte);
             txt = txt + bfr;
 
@@ -164,7 +164,7 @@ namespace cbu {
             if (row_index < 16) continue;
             row_index -= 16;
             row += 1;
-            sprintf(bfr,"%04X",uint32_t(row));
+            sprintf(bfr,"%04X",U32(row));
             txt = std::format("{}\n{}: ",txt,bfr);
         }
         return txt;
@@ -172,10 +172,10 @@ namespace cbu {
     inline string bytes_to_string(void *b,size_t len) {
         string txt;
         txt.reserve(len * 2);
-        uint8_t byte;
+        U8 byte;
         char bfr[5];
         for (size_t i = 0; i < len; i ++) {
-            memcpy(&byte,((uint8_t*) b) + i,1);
+            memcpy(&byte,((U8*) b) + i,1);
             sprintf(bfr,"%02X",byte);
             txt = txt + bfr;
         }
@@ -187,7 +187,7 @@ namespace cbu {
         for (size_t i = 0; i < hex.size(); i += 2) {
             string byte = hex.substr(i,2);
 
-            bytes.push_back(static_cast<uint8_t>(stoi(byte,NULL,16)));
+            bytes.push_back(static_cast<U8>(stoi(byte,NULL,16)));
         }
 
         return bytes;
@@ -228,7 +228,7 @@ namespace cbu {
             size_t index = 0;
             size_t count = 0;
             if (!infinite) {
-                uint16_t v = decode_u16(data,offset);
+                U16 v = decode_u16(data,offset);
                 count = v;
                 // log_debug(std::format("Limited repeating section: found {} entries",v));
 
@@ -368,56 +368,56 @@ namespace cbu {
     };
     class U8BinarySection : public BinaryFileSection {
     public:
-        U8BinarySection(void (*c)(void *object,uint8_t value),uint8_t (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
+        U8BinarySection(void (*c)(void *object,U8 value),U8 (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
 
-        void (*read_callback)(void*,uint8_t);
-        uint8_t (*write_callback)(void*);
+        void (*read_callback)(void*,U8);
+        U8 (*write_callback)(void*);
         size_t read_from_buffer(void *obj,BYTEARRAY &data,size_t offset) override {
-            uint8_t value = decode_u8(data,offset);
+            U8 value = decode_u8(data,offset);
             read_callback(obj,value);
 
             return 1;
         }
         void write_to_buffer(void *obj,BYTEARRAY &data) override {
-            uint8_t i = write_callback(obj);
+            U8 i = write_callback(obj);
 
             encode_u8(data,i);
         }
     };
     class U32BinarySection : public BinaryFileSection {
     public:
-        U32BinarySection(void (*c)(void *object,uint32_t value),uint32_t (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
+        U32BinarySection(void (*c)(void *object,U32 value),U32 (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
 
-        void (*read_callback)(void*,uint32_t);
-        uint32_t (*write_callback)(void*);
+        void (*read_callback)(void*,U32);
+        U32 (*write_callback)(void*);
         size_t read_from_buffer(void *obj,BYTEARRAY &data,size_t offset) override {
-            uint32_t value = decode_u32(data,offset);
+            U32 value = decode_u32(data,offset);
             read_callback(obj,value);
 
             return 4;
         }
         void write_to_buffer(void *obj,BYTEARRAY &data) override {
-            uint32_t i = write_callback(obj);
+            U32 i = write_callback(obj);
 
             encode_u32(data,i);
         }
     };
-    class FloatBinarySection : public BinaryFileSection {
+    class F32BinarySection : public BinaryFileSection {
     public:
-        FloatBinarySection(void (*c)(void *object,float value),float (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
+        F32BinarySection(void (*c)(void *object,F32 value),F32 (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
 
-        void (*read_callback)(void*,float);
-        float (*write_callback)(void*);
+        void (*read_callback)(void*,F32);
+        F32 (*write_callback)(void*);
         size_t read_from_buffer(void *obj,BYTEARRAY &data,size_t offset) override {
-            float value = decode_float(data,offset);
+            F32 value = decode_F32(data,offset);
             read_callback(obj,value);
 
             return 4;
         }
         void write_to_buffer(void *obj,BYTEARRAY &data) override {
-            float i = write_callback(obj);
+            F32 i = write_callback(obj);
 
-            encode_float(data,i);
+            encode_F32(data,i);
         }
     };
 
@@ -456,10 +456,10 @@ namespace cbu {
         }
 
         std::vector<BinaryFileVersion*> versions;
-        uint8_t latest_version;
+        U8 latest_version;
         // throws string on error
         inline void load_buffer_to_object(void *obj) {
-            uint8_t version = decode_u8(obj_data,0);
+            U8 version = decode_u8(obj_data,0);
 
             if (version > latest_version) version = 0;
             BinaryFileVersion *ver = versions[version];

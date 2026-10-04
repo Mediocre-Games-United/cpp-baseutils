@@ -15,7 +15,7 @@
 #endif
 
 
-typedef std::vector<uint8_t> BYTEARRAY;
+typedef std::vector<U8> BYTEARRAY;
 typedef std::vector<fpath> PATHARRAY;
 
 namespace cbu {

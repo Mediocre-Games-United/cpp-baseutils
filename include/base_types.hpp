@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <filesystem>
 #include <format>
 #include <string>
@@ -16,16 +17,28 @@ using vector = std::vector<T>;
 template <typename K,typename T>
 using umap = std::unordered_map<K,T>;
 
+using U64 = uint64_t;
+using S64 = int64_t;
+using U32 = uint32_t;
+using S32 = int32_t;
+using U16 = uint16_t;
+using S16 = int16_t;
+using U8 = uint8_t;
+using S8 = int8_t;
+
+using F32 = float;
+using F64 = double;
+
 # define PI          3.141592653589793238462643383279502884L /* pi */
 
 struct color_t {
     color_t() {}
-    color_t(float br,float a = 1.0) : r(br), g(br), b(br), a(a) {}
-    color_t(float r,float g,float b,float a = 1.0) : r(r), g(g), b(b), a(a) {}
-    float r = 1.0;
-    float g = 1.0;
-    float b = 1.0;
-    float a = 1.0;
+    color_t(F32 br,F32 a = 1.0) : r(br), g(br), b(br), a(a) {}
+    color_t(F32 r,F32 g,F32 b,F32 a = 1.0) : r(r), g(g), b(b), a(a) {}
+    F32 r = 1.0;
+    F32 g = 1.0;
+    F32 b = 1.0;
+    F32 a = 1.0;
 
     inline color_t operator*(const color_t &other) {
         return color_t(r * other.r,g * other.g,b * other.b,a * other.a);
@@ -39,10 +52,10 @@ typedef Clock::time_point TimePoint;
 class vec {
 public:
     vec(): x(0), y(0) {}
-    vec(double ix,double iy): x(ix), y(iy) {}
+    vec(F64 ix,F64 iy): x(ix), y(iy) {}
 
-    double x;
-    double y;
+    F64 x;
+    F64 y;
     inline vec operator+(const vec &other) {
         return vec(x + other.x,y + other.y);
     }
@@ -55,10 +68,10 @@ public:
     inline vec operator/(const vec &other) {
         return vec(x / other.x,y / other.y);
     }
-    inline vec operator*(const double &other) {
+    inline vec operator*(const F64 &other) {
         return vec(x * other,y * other);
     }
-    inline vec operator/(const double &other) {
+    inline vec operator/(const F64 &other) {
         return vec(x / other,y / other);
     }
     inline vec &operator+=(const vec &other) {
@@ -71,22 +84,22 @@ public:
         y -= other.y;
         return *this;
     }
-    inline vec &operator*=(const double &n) {
+    inline vec &operator*=(const F64 &n) {
         x *= n;
         y *= n;
         return *this;
     }
-    inline vec &operator/=(const double &n) {
+    inline vec &operator/=(const F64 &n) {
         x /= n;
         y /= n;
         return *this;
     }
 
-    inline double magnitude() {
+    inline F64 magnitude() {
         return std::sqrt(x * x + y * y);
     }
     inline vec unit() {
-        double m = magnitude();
+        F64 m = magnitude();
         if (m <= 0) return vec::zero();
         return *this / magnitude();
     }
@@ -114,12 +127,12 @@ struct std::formatter<vec> {
 class rect {
 public:
     rect(): x(0), y(0), w(0), h(0) {}
-    rect(double ix,double iy,double iw,double ih): x(ix), y(iy), w(iw), h(ih) {}
+    rect(F64 ix,F64 iy,F64 iw,F64 ih): x(ix), y(iy), w(iw), h(ih) {}
 
-    double x;
-    double y;
-    double w;
-    double h;
+    F64 x;
+    F64 y;
+    F64 w;
+    F64 h;
 };
 
 template <typename X,typename Base>

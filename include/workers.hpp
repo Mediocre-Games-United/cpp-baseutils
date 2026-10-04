@@ -19,7 +19,7 @@ namespace cbu {
         WorkerFunction call;
         WorkerFunction finished = NULL;
     };
-    using ThreadCount = uint16_t;
+    using ThreadCount = U16;
 
     struct WorkerState {
         std::counting_semaphore<> s{0};
