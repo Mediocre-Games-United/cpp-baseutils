@@ -1,5 +1,6 @@
 #pragma once
 
+#include "find_config.h"
 #include "base_types.hpp"
 #include "file.hpp"
 #include "logger.hpp"
@@ -7,17 +8,29 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
+#include <mutex>
 #include <string>
 
+
 namespace cbu {
+#ifdef CBU_CLI_ENABLE_MUTEX
+    extern std::mutex cli_mutex;
+#define CLI_GET_MUTEX std::lock_guard<std::mutex> lock(cli_mutex)
+#else
+#define CLI_GET_MUTEX // no cli mutex enabled!
+#endif
+
     inline void cli_input(string txt) {
+        CLI_GET_MUTEX;
         printf("\033[0m%s: ",reinterpret_cast<const char*>(txt.c_str()));
     }
     inline void cli_output(string txt) {
+        CLI_GET_MUTEX;
         printf("\033[0m%s\n",reinterpret_cast<const char*>(txt.c_str()));
     }
 
     inline string cli_get_string() {
+        CLI_GET_MUTEX;
         string str{};
         if (std::getline(std::cin,str)) {
             return str;
@@ -41,6 +54,7 @@ namespace cbu {
     }
 
     inline bool cli_get_valid_string(string *target) {
+        CLI_GET_MUTEX;
         string raw = cbu::cli_get_string();
         if (raw.empty()) return false;
 
@@ -50,8 +64,9 @@ namespace cbu {
 #ifdef _WIN32
     inline bool cli_get_valid_dirpath(fpath *target,fpath cwd = "C:/") {
 #else
-        inline bool cli_get_valid_dirpath(fpath *target,fpath cwd = "/") {
+    inline bool cli_get_valid_dirpath(fpath *target,fpath cwd = "/") {
 #endif
+        CLI_GET_MUTEX;
         cli_output("Welcome to the directory select utility!");
         string cmd;
         while (true) {
@@ -93,6 +108,7 @@ namespace cbu {
         return true;
     }
     inline bool cli_get_valid_int(int *target,int min,int max,bool default_enabled = false,int default_value = 0) {
+        CLI_GET_MUTEX;
         string str = cbu::cli_get_string();
         if (str.empty()) {
             if (default_enabled) { *target = default_value; return true; }
@@ -106,6 +122,7 @@ namespace cbu {
         return true;
     }
     inline bool cli_get_valid_bool(bool *target,bool default_enabled = false,bool default_value = false) {
+        CLI_GET_MUTEX;
         string raw = cbu::cli_get_string();
         if (raw.empty()) {
             if (default_enabled) return default_value;

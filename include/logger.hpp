@@ -1,5 +1,6 @@
 #pragma once
 
+#include "find_config.h"
 #include "base_types.hpp"
 #include <stdexcept>
 
