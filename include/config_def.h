@@ -11,6 +11,7 @@
 #define APP_ID          (CMP_NAME ":" APP_NAME)
 
 #define STUDIO_NAME "Mediocre Games United"
+#define ENGINE_NAME "Made with S2D"
 
 #ifndef GIT_COMMIT
 #define GIT_COMMIT "unknown"
