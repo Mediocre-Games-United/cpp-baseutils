@@ -2,8 +2,10 @@
 
 #include "base_types.hpp"
 #include "find_config.h"
+#include "logger.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <format>
 #include <fstream>
 #include <string>
 #include <filesystem>
@@ -151,6 +153,7 @@ namespace cbu {
         return require_file_binary_path(resolve_path(path));
     }
     inline void write_to_file_safe_binary(fpath fpath,BYTEARRAY &data) {
+        cbu::log_debug(std::format("Writing safe to file {}",cbu::path_to_utf8(fpath)));
         if (fpath.has_parent_path()) {
             std::filesystem::create_directories(fpath.parent_path());
         }
@@ -178,7 +181,7 @@ namespace cbu {
 
     #ifdef EDITOR
     inline fpath get_editor_path() {
-        return get_parent_dir().parent_path().parent_path();
+        return "/home";
     }
     #endif
     inline fpath get_exe_path() {

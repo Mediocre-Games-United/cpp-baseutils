@@ -704,6 +704,24 @@ namespace cbu {
             encode_u32(data,i);
         }
     };
+    class S64BinarySection : public BinaryFileSection {
+    public:
+        S64BinarySection(void (*c)(void *object,S64 value),S64 (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
+
+        void (*read_callback)(void*,S64);
+        S64 (*write_callback)(void*);
+        size_t read_from_buffer(void *obj,BYTEARRAY &data,size_t offset) override {
+            S64 value = decode_s64(data,offset);
+            read_callback(obj,value);
+
+            return 8;
+        }
+        void write_to_buffer(void *obj,BYTEARRAY &data) override {
+            S64 i = write_callback(obj);
+
+            encode_s64(data,i);
+        }
+    };
     class F32BinarySection : public BinaryFileSection {
     public:
         F32BinarySection(void (*c)(void *object,F32 value),F32 (*w)(void *obj)) : BinaryFileSection({}), read_callback(c), write_callback(w) {};
