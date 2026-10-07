@@ -59,6 +59,12 @@ namespace cbu {
         });
         return s;
     }
+    template<typename T>
+    inline string string_n(string single,string many,T c) {
+        if (c == 1) return single;
+
+        return many;
+    }
     inline std::vector<string> string_split(string s,string splitter) {
         std::vector<string> res;
 
