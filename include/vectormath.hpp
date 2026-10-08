@@ -2,7 +2,9 @@
 
 #include "base_types.hpp"
 #include <cassert>
+#include <functional>
 #include <vector>
+#include <map>
 
 namespace cbu {
     template<typename T>
@@ -128,5 +130,60 @@ namespace cbu {
 
         vector<other*> olist{};
         FPUList<obj> list{};
+    };
+    template<typename obj,typename depth>
+    // Fast ordered depth list
+    class FODList {
+    public:
+        inline void insert(obj *n,depth d) {
+            objects[d].insert(n);
+            indexes[n] = d;
+        }
+        inline void remove(obj *r) {
+            assert(indexes.contains(r));
+
+            depth d = indexes[r];
+            auto &ref = objects[d];
+            ref.remove(r);
+            if (ref.size() > 0) return;
+            objects.erase(d);
+        }
+        inline bool has(obj *r) {
+            return indexes.contains(r);
+        }
+        inline void foreach(std::function<void(obj*)> cb) {
+            for (auto &[dp,objects] : objects) {
+                for (auto &s : objects) {
+                    cb(s);
+                }
+            }
+        }
+
+        std::map<depth,FPUList<obj>> objects{};
+        umap<obj*,depth> indexes{};
+    };
+    template<typename obj,typename other,typename depth>
+    class FODListLinked {
+    public:
+        inline void insert(obj *n,other *o,depth d) {
+            list.insert(n,d);
+            olist[n] = o;
+        }
+        inline other *remove(obj *n) {
+            if (!list.has(n)) return NULL;
+
+            other *o = olist[n];
+            olist.erase(n);
+            list.remove(n);
+            return o;
+        }
+        inline void foreach(std::function<void(other*)> cb) {
+            list.foreach([&cb,this](obj *o) { cb(olist[o]); });
+        }
+
+
+
+        umap<obj*,other*> olist{};
+        FODList<obj,depth> list{};
     };
 }
