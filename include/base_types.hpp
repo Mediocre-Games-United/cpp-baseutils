@@ -56,6 +56,10 @@ public:
 
     F64 x;
     F64 y;
+
+    inline vec operator-() {
+        return vec(-x,-y);
+    }
     inline vec operator+(const vec &other) {
         return vec(x + other.x,y + other.y);
     }
@@ -108,6 +112,12 @@ public:
     }
 
     inline static vec zero() { return vec(0,0); }
+    inline static vec one() { return vec(1,1); }
+    inline static vec half() { return vec(.5,.5); }
+    inline static vec right() { return vec(1,0); }
+    inline static vec left() { return vec(-1,0); }
+    inline static vec down() { return vec(0,1); }
+    inline static vec up() { return vec(0,-1); }
 
     operator string() const {
         return std::format("V2[{},{}]",x,y);
