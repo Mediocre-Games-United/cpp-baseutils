@@ -145,7 +145,9 @@ public:
     F64 h;
 };
 
-template <typename X,typename Base>
-inline bool is_of_type(Base *p) { assert(p); return dynamic_cast<X*>(p); }
+namespace cbu {
+    template <typename X,typename Base>
+    inline bool is_of_type(Base *p) { assert(p); return dynamic_cast<X*>(p); }
+}
 
 #define VEC_ZERO vec(0,0)

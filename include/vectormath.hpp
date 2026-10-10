@@ -180,6 +180,9 @@ namespace cbu {
         inline void foreach(std::function<void(other*)> cb) {
             list.foreach([&cb,this](obj *o) { cb(olist[o]); });
         }
+        inline void foreach_obj(std::function<void(obj*)> cb) {
+            list.foreach(cb);
+        }
 
 
 
