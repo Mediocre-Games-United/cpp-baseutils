@@ -10,3 +10,4 @@ Simply add this line to your main.cpp
 cbu::GlobalCBUState cbu::global_state{};
 ```
 to be defined elsewhere
+
