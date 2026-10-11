@@ -136,7 +136,7 @@ namespace cbu {
             state->threads.emplace_back(std::thread(&worker_pool_main));
         }
 
-        cbu::log_info(std::format("Started {} worker threads",state->count));
+        cbu::log_debug(std::format("Started {} worker threads",state->count));
     }
     inline void quit_all_threads() {
         auto state = get_state();
