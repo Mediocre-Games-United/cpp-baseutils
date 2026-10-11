@@ -1,6 +1,8 @@
 #pragma once
 
+#include "cbu_state.hpp"
 #include "find_config.h"
+#include "ansi.hpp"
 #include "base_types.hpp"
 #include "file.hpp"
 #include "logger.hpp"
@@ -14,19 +16,18 @@
 
 namespace cbu {
 #ifdef CBU_CLI_ENABLE_MUTEX
-    extern std::mutex cli_mutex;
-#define CLI_GET_MUTEX std::lock_guard<std::mutex> lock(cli_mutex)
+#define CLI_GET_MUTEX std::lock_guard<std::mutex> lock(global_state.cli_mutex)
 #else
 #define CLI_GET_MUTEX // no cli mutex enabled!
 #endif
 
-    inline void cli_input(string txt) {
+    inline void cli_input(string txt,ansi_color_code color = ansi_color_white) {
         CLI_GET_MUTEX;
-        printf("\033[0m%s: ",reinterpret_cast<const char*>(txt.c_str()));
+        std::cout << ansi_wrap_string(std::format("{}: ",txt),color);
     }
-    inline void cli_output(string txt) {
+    inline void cli_output(string txt,ansi_color_code color = ansi_color_white) {
         CLI_GET_MUTEX;
-        printf("\033[0m%s\n",reinterpret_cast<const char*>(txt.c_str()));
+        std::cout << std::format("{}\n",ansi_wrap_string(txt,color));
     }
 
     inline string cli_get_string() {

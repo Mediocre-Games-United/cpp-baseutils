@@ -1,45 +1,22 @@
 #pragma once
 
+#include "cbu_state.hpp"
 #include "find_config.h"
 #include "base_types.hpp"
+#include "ansi.hpp"
 
 #include <cstdio>
 #include <stdexcept>
 
-#ifdef _WIN32
-#include <io.h>
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
 
 namespace cbu {
     #ifdef CBU_LOGGER_ENABLE_MUTEX
-    extern std::mutex logger_mutex;
-    #define LOGGER_GET_MUTEX std::lock_guard<std::mutex> lock(logger_mutex)
+    #define LOGGER_GET_MUTEX std::lock_guard<std::mutex> lock(global_state.logger_mutex)
     #else
     #define LOGGER_GET_MUTEX // no logger mutex enabled!
     #endif
 
     namespace detail {
-        inline bool colors_enabled() {
-            #ifdef _WIN32
-            static const bool enabled = [] {
-                if (!_isatty(_fileno(stdout))) return false;
-
-                HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (output == INVALID_HANDLE_VALUE || output == nullptr) return false;
-
-                DWORD mode = 0;
-                if (!GetConsoleMode(output, &mode)) return false;
-
-                return SetConsoleMode(output, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING) != 0;
-            }();
-            return enabled;
-            #else
-            return isatty(fileno(stdout)) != 0;
-            #endif
-        }
 
         inline void print_log(const char* color, const char* label, const string& txt) {
             if (colors_enabled() && color[0] != '\0') {
@@ -88,9 +65,10 @@ namespace cbu {
     }
 
     inline void log_verbose(string txt) {
-        #ifdef VERBOSE
+#ifndef VERBOSE
+        if (!global_state.verbose) return;
+#endif
         LOGGER_GET_MUTEX;
         detail::print_log("\033[34m", "VERBOSE", txt);
-        #endif
     }
 }  // namespace cbu
