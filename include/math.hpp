@@ -74,6 +74,9 @@ namespace cbu {
 
         return f;
     }
+    inline F64 f_round(F64 f,F64 s = 1.0) {
+        return std::round(f / s) * s;
+    }
 
     inline vec v_min(vec v1,vec v2) {
         return vec(f_min(v1.x,v2.x),f_min(v1.y,v2.y));
@@ -83,6 +86,9 @@ namespace cbu {
     }
     inline vec v_clamp(vec v,vec min,vec max) {
         return vec(f_clamp(v.x,min.x,max.x),f_clamp(v.y,min.y,max.y));
+    }
+    inline vec v_round(vec v,vec s = vec::one()) {
+        return vec(f_round(v.x,s.x),f_round(v.y,s.y));
     }
 
 

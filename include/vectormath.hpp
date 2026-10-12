@@ -63,7 +63,7 @@ namespace cbu {
             objects.push_back(n);
         }
         inline void remove(obj *r) {
-            assert(indexes.contains(r));
+            if (!indexes.contains(r)) return;
 
             const size_t i = indexes[r];
             indexes[objects.back()] = i;
