@@ -562,6 +562,15 @@ namespace cbu {
             if (!infinite) {
                 encode_u16(data,len);
             }
+            if (!list) {
+                for (size_t i = 0; i < len; i ++) {
+                    for (auto s : sub_sections) {
+                        s->write_to_buffer(obj,data);
+                    }
+                }
+                write_del(og);
+                return;
+            }
 
             // cbu::log_debug(std::format("Repeating at len {}, size {}",len,size));
             for (size_t i = 0; i < len; i ++) {

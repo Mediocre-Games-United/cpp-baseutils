@@ -4,6 +4,8 @@
 #include <cassert>
 #include <functional>
 #include <vector>
+#include <cstdint>
+#include <algorithm>
 #include <map>
 
 namespace cbu {
@@ -189,4 +191,42 @@ namespace cbu {
         umap<obj*,other*> olist{};
         FODList<obj,depth> list{};
     };
+
+
+    inline void draw_line(S64 x0, S64 y0,
+                  S64 x1, S64 y1,
+                  std::function<void(S64 x,S64 y)> plot)
+    {
+        using i128 = __int128_t;
+
+        const i128 dx = (x0 < x1)
+        ? static_cast<i128>(x1) - x0
+        : static_cast<i128>(x0) - x1;
+        const i128 dy = (y0 < y1)
+        ? static_cast<i128>(y1) - y0
+        : static_cast<i128>(y0) - y1;
+
+        const S64 sx = (x0 < x1) ? 1 : -1;
+        const S64 sy = (y0 < y1) ? 1 : -1;
+        i128 err = dx - dy;
+
+        while (true) {
+            plot(x0, y0);
+
+            if (x0 == x1 && y0 == y1)
+                break;
+
+            const i128 e2 = 2 * err;
+
+            if (e2 > -dy) {
+                err -= dy;
+                x0 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y0 += sy;
+            }
+        }
+    }
+
 }
