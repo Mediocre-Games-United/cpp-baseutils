@@ -101,7 +101,21 @@ namespace cbu {
 
         state->sync_post(c);
     }
-    inline void run_tasks_async(std::vector<WorkObject> &objs,void (*cb)(void)) {
+    inline void run_tasks_sync(vector<std::function<void()>> objs) {
+        auto state = get_state();
+        state->sync_pre();
+        size_t c = 0;
+        for (auto obj : objs) {
+            state->sync_queue.push((WorkObject) {
+                .call = obj,
+                .finished = tasks_sync_cb,
+            });
+            c += 1;
+        }
+
+        state->sync_post(c);
+    }
+    inline void run_tasks_async(vector<WorkObject> &objs,void (*cb)(void)) {
         auto state = get_state();
         cbu::log_verbose(std::format("Running {} tasks async, current tasks: {}/{}",objs.size(),state->workers_work_done.load(),state->workers_work_count));
         size_t c = 0;
