@@ -29,6 +29,8 @@ using S8 = int8_t;
 using F32 = float;
 using F64 = double;
 
+using CLayer = U64;
+
 # define PI          3.141592653589793238462643383279502884L /* pi */
 
 struct color_t {
