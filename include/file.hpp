@@ -152,6 +152,15 @@ namespace cbu {
     inline BYTEARRAY require_file_binary(const char* path) {
         return require_file_binary_path(resolve_path(path));
     }
+    inline void write_to_file_safe(fpath fpath,string &data) {
+        cbu::log_debug(std::format("Writing safe to file {}",cbu::path_to_utf8(fpath)));
+        if (fpath.has_parent_path()) {
+            std::filesystem::create_directories(fpath.parent_path());
+        }
+
+        std::ofstream ofs(fpath, std::ios::binary | std::ios::trunc);
+        ofs.write(data.data(), static_cast<std::streamsize>(data.size()));
+    }
     inline void write_to_file_safe_binary(fpath fpath,BYTEARRAY &data) {
         cbu::log_debug(std::format("Writing safe to file {}",cbu::path_to_utf8(fpath)));
         if (fpath.has_parent_path()) {
