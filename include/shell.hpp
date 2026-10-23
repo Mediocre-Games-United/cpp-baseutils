@@ -120,7 +120,7 @@ namespace cbu {
         log_verbose(std::format("Shell: running command {}", command));
 
         if (output == nullptr) {
-            log_info("Output is NULL! streaming output to stdout...");
+            log_debug("Output is NULL! streaming output to stdout...");
         } else {
             output->clear();
         }
@@ -329,7 +329,7 @@ namespace cbu {
         log_verbose(std::format("Shell: running command {}", command));
 
         if (output == nullptr) {
-            log_info("Output is NULL! streaming output to stdout...");
+            log_debug("Output is NULL! streaming output to stdout...");
         } else {
             output->clear();
         }
