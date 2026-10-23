@@ -20,7 +20,9 @@
 #define BUILD_TIME "unknown date"
 #endif
 
-#define BUILD_STRING (GIT_COMMIT "@" BUILD_TIME)
+#define STR_X(v) #v
+#define STR(v) STR_X(v)
+#define BUILD_STRING STR(GIT_COMMIT) "@" STR(BUILD_TIME)
 
 
 #define INIT_CANVAS_W 800
@@ -53,9 +55,9 @@
 #define VERSION_TYPE "standard"
 #endif
 
-#define STR_X(v) #v
-#define STR(v) STR_X(v)
-#define VERSION_STRING ("v" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_PATCH) "-" VERSION_TYPE)
+#define VERSION_STRING "v" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_PATCH) "-" VERSION_TYPE
+
+#define FULL_VERSION_STRING VERSION_STRING "  -  " BUILD_STRING
 
 #ifndef COLLISION_CELL_SIZE
 #define COLLISION_CELL_SIZE 1024
