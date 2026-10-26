@@ -27,8 +27,8 @@ namespace cbu {
         if (ws.empty()) return {};
 
         int needed = WideCharToMultiByte(CP_UTF8, 0,
-                                        ws.data(), (int)ws.size(),
-                                        nullptr, 0, nullptr, nullptr);
+                                         ws.data(), (int)ws.size(),
+                                         nullptr, 0, nullptr, nullptr);
         std::string out(needed, '\0');
         WideCharToMultiByte(CP_UTF8, 0,
                             ws.data(), (int)ws.size(),
@@ -93,6 +93,20 @@ namespace cbu {
         fpath p = get_userdata_dir();
 
         return p;
+    }
+    inline fpath cache_path()
+    {
+        const char* xdg = std::getenv("XDG_CACHE_HOME");
+        if (xdg && *xdg) {
+            return fpath(xdg) / CMP_NAME / APP_NAME;
+        }
+        const char* home = std::getenv("HOME");
+        if (home && *home) {
+            return fpath(home) / ".cache" / CMP_NAME / APP_NAME;;
+        }
+
+        cbu::log_error(true,"Cache path not found");
+        return "";
     }
 
 
@@ -169,7 +183,7 @@ namespace cbu {
 
         std::ofstream ofs(fpath, std::ios::binary | std::ios::out | std::ios::trunc);
         ofs.write(reinterpret_cast<const char*>(data.data()),
-                static_cast<std::streamsize>(data.size()));
+                  static_cast<std::streamsize>(data.size()));
     }
 
     inline std::vector<fpath> iterate_dir(fpath dir) {

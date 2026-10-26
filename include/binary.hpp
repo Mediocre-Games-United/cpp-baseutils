@@ -754,7 +754,7 @@ namespace cbu {
     public:
         virtual ~BinaryFileVersion() = default;
         size_t offset = 0;
-        void buffer_to_object_recurse(BYTEARRAY &bfr,void *obj,BinaryFileSection *s) {
+        inline void buffer_to_object_recurse(BYTEARRAY &bfr,void *obj,BinaryFileSection *s) {
             if (!s) return;
             offset += s->read_from_buffer(obj,bfr,offset);
 
@@ -763,7 +763,7 @@ namespace cbu {
                 buffer_to_object_recurse(bfr,obj,n);
             }
         }
-        void object_to_buffer_recurse(BYTEARRAY &bfr,void *obj,BinaryFileSection *s) {
+        inline void object_to_buffer_recurse(BYTEARRAY &bfr,void *obj,BinaryFileSection *s) {
             if (!s) return;
             s->write_to_buffer(obj,bfr);
 
@@ -773,7 +773,7 @@ namespace cbu {
             }
         }
 
-        virtual BinaryFileSection *get_sections() { return NULL; };
+        virtual BinaryFileSection *get_sections() = 0;
     };
     class BinaryFileFormat {
     public:
