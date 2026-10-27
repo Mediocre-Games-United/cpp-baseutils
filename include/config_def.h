@@ -38,21 +38,25 @@
 #define VERSION_PATCH 0
 #endif
 
+
 #ifdef EDITOR
 #define VERSION_TYPE "editor"
 #else
-#ifdef RELEASE
-#define VERSION_TYPE "prod"
+#ifdef STABLE
+#define VERSION_TYPE "stable"
 #else
 #ifdef BETA
 #define VERSION_TYPE "beta"
-
+#else
+#ifdef RELEASE
+#define VERSION_TYPE "release"
+#endif
 #endif
 #endif
 #endif
 
 #ifndef VERSION_TYPE
-#define VERSION_TYPE "standard"
+#define VERSION_TYPE "unknown"
 #endif
 
 #define VERSION_STRING "v" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_PATCH) "-" VERSION_TYPE
