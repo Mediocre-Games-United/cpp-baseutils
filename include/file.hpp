@@ -129,6 +129,9 @@ namespace cbu {
         else if (str.substr(0,7) == "user://") {
             path = get_user_dir() / str.substr(7);
         }
+        else if (str.substr(0,8) == "cache://") {
+            path = cache_path() / str.substr(8);
+        }
         else path = p;
 
         return path;
@@ -184,6 +187,10 @@ namespace cbu {
         std::ofstream ofs(fpath, std::ios::binary | std::ios::out | std::ios::trunc);
         ofs.write(reinterpret_cast<const char*>(data.data()),
                   static_cast<std::streamsize>(data.size()));
+    }
+    inline bool write_file_empty(const fpath path) {
+        std::ofstream file(path);
+        return file.good();
     }
 
     inline std::vector<fpath> iterate_dir(fpath dir) {
