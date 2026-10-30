@@ -33,6 +33,16 @@ using CLayer = U64;
 
 # define PI          3.141592653589793238462643383279502884L /* pi */
 
+namespace cbu {
+    struct too_many_exceptions {
+        too_many_exceptions(string txt) : msg(txt) {}
+
+        inline string what() { return msg; }
+    private:
+        string msg;
+    };
+}
+
 struct color_t {
     color_t() {}
     color_t(F32 br,F32 a = 1.0) : r(br), g(br), b(br), a(a) {}
