@@ -207,6 +207,13 @@ namespace cbu {
             return {};
         }
     }
+    inline bool dir_is_empty(fpath dir) {
+        for (auto &s : iterate_dir(dir)) {
+            return false;
+        }
+
+        return true;
+    }
 
 
     #ifdef EDITOR
