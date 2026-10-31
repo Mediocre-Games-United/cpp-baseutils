@@ -8,6 +8,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
+#include <queue>
 
 using string = std::string;
 using letter = char32_t;
@@ -16,6 +18,11 @@ template <typename T>
 using vector = std::vector<T>;
 template <typename K,typename T>
 using umap = std::unordered_map<K,T>;
+
+template <typename T>
+using queue = std::queue<T>;
+template <typename T>
+using func = std::function<T>;
 
 using U64 = uint64_t;
 using S64 = int64_t;
