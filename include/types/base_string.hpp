@@ -70,6 +70,12 @@ namespace cbu {
         bool operator==(const char *other) const {
             return *this == string(other);
         }
+        letter operator[](size_t i) const {
+            cbu::log_debug(std::format("Get index {} size {}",i,size()));
+
+            return data[i];
+        }
+
         friend string operator+(const string &th,const string &other) {
             auto copy = th.data;
             copy.insert(copy.end(),other.data.begin(),other.data.end());
@@ -200,7 +206,9 @@ namespace cbu {
             return data.size();
         }
         inline void insert(size_t index,string sub) {
-            data.insert(data.begin() + index,sub.begin(),sub.end());
+            cbu::log_debug(std::format("Pre insert index {} size {} insert size {}",index,size(),sub.size()));
+            data.insert(data.begin() + index,sub.data.begin(),sub.data.end());
+            cbu::log_debug(std::format("Post insert size {}",size()));
         }
         inline void erase(size_t index,size_t len) {
             data.erase(data.begin() + index, data.begin() + index + len);
