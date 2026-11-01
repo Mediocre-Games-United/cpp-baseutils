@@ -143,7 +143,7 @@ namespace cbu {
 
     inline void start_worker_threads() {
         auto state = get_state();
-        state->count = i_clamp(std::thread::hardware_concurrency(),4,64);
+        state->count = clamp<ThreadCount>(std::thread::hardware_concurrency(),4,64);
         state->threads.reserve(state->count);
 
         for (ThreadCount i = 0; i < state->count; i ++) {

@@ -1,14 +1,14 @@
-#ifndef BINARY_HPP
-#define BINARY_HPP
+#pragma once
 
 #include "file.hpp"
 #include "base_types.hpp"
 #include "logger.hpp"
-#include "stringmath.hpp"
+#include "base_string.hpp"
 #include <cstdint>
 #include <cstring>
 #include <format>
 #include <type_traits>
+#include "other_types.hpp"
 
 namespace cbu {
     namespace binary_detail {
@@ -230,7 +230,7 @@ namespace cbu {
         if (len != nullptr)
             *len = sizeof(U16) + static_cast<size_t>(size);
 
-        return string(
+        return std::string(
             reinterpret_cast<const char*>(bytes.data() + data_offset),
                       static_cast<size_t>(size)
         );
@@ -393,7 +393,7 @@ namespace cbu {
 
     inline size_t encode_string(
         BYTEARRAY& bytes,
-        const string& value
+        const std::string& value
     )
     {
         constexpr size_t max_length = std::numeric_limits<U16>::max();
@@ -403,7 +403,6 @@ namespace cbu {
         : value.size();
 
         encode_u16(bytes, static_cast<U16>(length));
-
         bytes.insert(
             bytes.end(),
                      reinterpret_cast<const U8*>(value.data()),
@@ -451,7 +450,7 @@ namespace cbu {
 
 
     inline string bytes_to_string_logger(void *b,size_t len) {
-        string txt = "0000: ";
+        std::string txt = "0000: ";
         txt.reserve(len * 5);
         size_t row = 0;
         size_t row_index = 0;
@@ -472,7 +471,7 @@ namespace cbu {
         return txt;
     }
     inline string bytes_to_string(void *b,size_t len) {
-        string txt;
+        std::string txt;
         txt.reserve(len * 2);
         U8 byte;
         char bfr[5];
@@ -487,7 +486,7 @@ namespace cbu {
     inline BYTEARRAY string_to_bytes(string hex) {
         BYTEARRAY bytes;
         for (size_t i = 0; i < hex.size(); i += 2) {
-            string byte = hex.substr(i,2);
+            std::string byte = hex.substr(i,2);
 
             bytes.push_back(static_cast<U8>(stoi(byte,NULL,16)));
         }
@@ -777,7 +776,7 @@ namespace cbu {
     };
     class BinaryFileFormat {
     public:
-        BinaryFileFormat(std::vector<BinaryFileVersion*> v,const char *e) : versions(v), latest_version(v.size() - 1), ext(cbu::StringName(cbu::string_uppercase(e))) {};
+        BinaryFileFormat(std::vector<BinaryFileVersion*> v,string e) : versions(v), latest_version(v.size() - 1), ext(cbu::StringName(e.to_uppercase())) {};
         ~BinaryFileFormat() {
             for (size_t i = 0; i < versions.size(); i ++) {
                 delete versions[i];
@@ -828,5 +827,3 @@ namespace cbu {
         BYTEARRAY obj_data;
     };
 }
-
-#endif

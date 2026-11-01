@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base_types.hpp"
-#include "base_string.hpp"
 
 class vec {
 public:
@@ -73,7 +72,7 @@ public:
     inline static vec down() { return vec(0,1); }
     inline static vec up() { return vec(0,-1); }
 
-    operator string() const {
+    operator std::string() const {
         return std::format("V2[{},{}]",x,y);
     }
 };

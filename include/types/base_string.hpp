@@ -16,26 +16,70 @@ namespace cbu {
         string() {}
         string(std::string str) {
             try {
-                from_utf8(str);
+                data = from_utf8(str);
             } catch (error err) {
                 cbu::log_error(false,std::format("string error: {}",err.what()));
 
                 data = {};
             }
+            copy = to_utf8();
         }
         string(const char *c) {
             try {
-                from_utf8(c);
+                data = from_utf8(c);
             } catch (error err) {
                 cbu::log_error(false,std::format("string error: {}",err.what()));
 
                 data = {};
             }
+            copy = to_utf8();
         }
         string(vector<letter> d) {
             data = d;
+            try {
+                copy = to_utf8();
+            } catch (error err) {
+                cbu::log_error(false,std::format("string error: {}",err.what()));
+
+                data = {};
+                copy = {};
+            }
         }
-        operator std::string() {
+        bool operator==(const string &other) const {
+            if (other.size() != size()) return false;
+
+            for (size_t i = 0; i < size(); i ++) {
+                if (data[i] == other.data[i]) continue;
+
+                return false;
+            }
+
+            return true;
+        }
+        bool operator==(const char *other) const {
+            return *this == string(other);
+        }
+        friend string operator+(const string &th,const string &other) {
+            auto copy = th.data;
+            copy.insert(copy.end(),other.data.begin(),other.data.end());
+
+            return copy;
+        }
+        inline string &operator+=(const string &other) {
+            data.insert(data.end(),other.data.begin(),other.data.end());
+            try {
+                copy = to_utf8();
+            } catch (error err) {
+                cbu::log_error(false,std::format("string error: {}",err.what()));
+
+                data = {};
+                copy = {};
+            }
+
+            return *this;
+        }
+
+        operator std::string() const {
             try {
                 return to_utf8();
             } catch (error err) {
@@ -43,7 +87,7 @@ namespace cbu {
                 return {};
             }
         }
-        operator std::filesystem::path() {
+        operator std::filesystem::path() const {
             try {
                 return to_utf8();
             } catch (error err) {
@@ -51,6 +95,10 @@ namespace cbu {
                 return {};
             }
         }
+        operator const char *() const {
+            return copy.c_str();
+        }
+
 
         struct error {
             error(std::string err) : self(err) {}
@@ -61,21 +109,28 @@ namespace cbu {
             std::string self;
         };
 
-        inline size_t size() const {
-            return data.size();
-        }
         inline string to_uppercase() {
             string n = *this;
 
             std::transform(n.data.begin(),n.data.end(),n.data.begin(),[](letter c) {
                 return std::toupper(c);
             });
-            return n;
+
+            return n.data;
         }
         inline string substr(size_t start,size_t len = -1) const {
-            return vector<letter>(data.begin() + start,data.begin() + start + cbu::min(len,size()));
+            return vector<letter>(data.begin() + start,data.begin() + start + cbu::min(len,size() - start));
         }
-        inline vector<string> string_split(string splitter) {
+        inline bool starts_with(string other) const {
+            string sub = substr(0,other.size());
+            return sub == other;
+        }
+        inline bool end_with(string other) const {
+            string sub = substr(size() - other.size(),other.size());
+            return sub == other;
+        }
+
+        inline vector<string> split(string splitter) {
             vector<string> res;
 
             size_t p = 0;
@@ -115,9 +170,24 @@ namespace cbu {
                 }
 
                 data = vector<char32_t>{data.begin() + first,data.end()};
+
+            try {
+                copy = to_utf8();
+            } catch (error err) {
+                cbu::log_error(false,std::format("string error: {}",err.what()));
+
+                data = {};
+                copy = {};
+            }
         }
 
 
+        inline bool empty() const {
+            return data.empty();
+        }
+        inline size_t size() const {
+            return data.size();
+        }
         using iterator = typename vector<letter>::iterator;
         using const_iterator = typename vector<letter>::const_iterator;
         inline iterator begin() {
@@ -160,9 +230,10 @@ namespace cbu {
             return output;
         }
     private:
-        inline void from_utf8(std::string in) {
-            data.clear();
-            data.reserve(in.size());
+        inline vector<letter> from_utf8(std::string in) {
+            vector<letter> output{};
+
+            output.reserve(in.size());
 
             const auto* bytes =
             reinterpret_cast<const unsigned char*>(in.data());
@@ -210,11 +281,13 @@ namespace cbu {
                     throw error("Invalid UTF-8 sequence");
                     }
 
-                    data.push_back(codepoint);
+                    output.push_back(codepoint);
             }
 
+            return output;
         }
         vector<letter> data;
+        std::string copy;
     };
     class StringName {
     public:
@@ -271,13 +344,30 @@ namespace cbu {
     }
 }
 
+using string = cbu::string;
+using stringname = cbu::StringName;
 template<>
-struct std::hash<cbu::StringName> {
-    size_t operator()(const cbu::StringName& s) const noexcept {
+struct std::hash<stringname> {
+    size_t operator()(const stringname& s) const noexcept {
         return std::hash<size_t>{}(s.hash_index);
     }
 };
+template<>
+struct std::hash<string> {
+    size_t operator()(const string& s) const noexcept {
+        return std::hash<stringname>{}(s);
+    }
+};
 
-using string = cbu::string;
-using stringname = cbu::StringName;
+template<>
+struct std::formatter<string> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    auto format(const string& f, std::format_context& ctx) const {
+        return std::format_to(ctx.out(),"{}",f);
+    }
+};
+
 

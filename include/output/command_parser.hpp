@@ -212,6 +212,6 @@ struct std::formatter<cbu::parser_output> {
     }
 
     auto format(const cbu::parser_output& p, std::format_context& ctx) const {
-        return std::format_to(ctx.out(),"{}",string(p));
+        return std::format_to(ctx.out(),"{}",p);
     }
 };

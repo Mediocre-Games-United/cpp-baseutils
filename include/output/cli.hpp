@@ -6,7 +6,7 @@
 #include "base_types.hpp"
 #include "file.hpp"
 #include "logger.hpp"
-#include "stringmath.hpp"
+#include "base_string.hpp"
 #include <filesystem>
 #include <format>
 #include <iostream>

@@ -32,8 +32,8 @@ namespace cbu {
     }
 
     struct ansi_color_code {
-        ansi_color_code(string c) : label(c) {}
-        string label;
+        ansi_color_code(std::string c) : label(c) {}
+        std::string label;
     };
     const ansi_color_code ansi_color_white = {"0"};
 
@@ -53,9 +53,9 @@ namespace cbu {
     const ansi_color_code ansi_color_pink = {"95"};
     const ansi_color_code ansi_color_cyan = {"96"};
 
-    inline string ansi_wrap_string(string txt,ansi_color_code code) {
+    inline std::string ansi_wrap_string(std::string txt,ansi_color_code code) {
         return std::format("\033[{}m{}\033[0m",code.label,txt);
     }
-    inline string ansi_wrap_bold(string txt) { return std::format("\033[1m{}\033[0m",txt); }
-    inline string ansi_wrap_italic(string txt) { return std::format("\033[3m{}\033[0m",txt); }
+    inline std::string ansi_wrap_bold(std::string txt) { return std::format("\033[1m{}\033[0m",txt); }
+    inline std::string ansi_wrap_italic(std::string txt) { return std::format("\033[3m{}\033[0m",txt); }
 }

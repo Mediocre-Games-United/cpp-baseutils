@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <format>
-#include "stringmath.hpp"
+#include "base_string.hpp"
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN

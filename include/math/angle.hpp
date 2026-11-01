@@ -1,5 +1,6 @@
 #pragma once
 #include "base_types.hpp"
+#include "vec_types.hpp"
 
 namespace cbu {
     inline F64 angle_clamp(F64 a) {

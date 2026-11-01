@@ -18,7 +18,7 @@ namespace cbu {
 
     namespace detail {
 
-        inline void print_log(const char* color, const char* label, const string& txt) {
+        inline void print_log(const char* color, const char* label, const std::string& txt) {
             if (colors_enabled() && color[0] != '\0') {
                 std::printf("%s%s: %s\033[0m\n", color, label, txt.c_str());
             } else {
@@ -27,7 +27,7 @@ namespace cbu {
         }
     }  // namespace detail
 
-    inline void log_error(bool will_throw, string txt) {
+    inline void log_error(bool will_throw, std::string txt) {
         {
             LOGGER_GET_MUTEX;
             detail::print_log("\033[31;1m", "ERROR", txt);
@@ -37,34 +37,34 @@ namespace cbu {
         }
     }
 
-    inline void log_warn(string txt) {
+    inline void log_warn(std::string txt) {
         LOGGER_GET_MUTEX;
         detail::print_log("\033[33;1m", "WARN", txt);
     }
 
-    inline void log_info(string txt) {
+    inline void log_info(std::string txt) {
         LOGGER_GET_MUTEX;
         detail::print_log("", "INFO", txt);
     }
 
-    inline void log_network(string txt) {
+    inline void log_network(std::string txt) {
         LOGGER_GET_MUTEX;
         detail::print_log("\033[35;1m", "NETWORK", txt);
     }
 
-    inline void log_success(string txt) {
+    inline void log_success(std::string txt) {
         LOGGER_GET_MUTEX;
         detail::print_log("\033[32;1m", "OK", txt);
     }
 
-    inline void log_debug(string txt) {
+    inline void log_debug(std::string txt) {
         #ifndef RELEASE
         LOGGER_GET_MUTEX;
         detail::print_log("\033[36m", "DEBUG", txt);
         #endif
     }
 
-    inline void log_verbose(string txt) {
+    inline void log_verbose(std::string txt) {
 #ifndef VERBOSE
         if (!global_state.verbose) return;
 #endif

@@ -26,18 +26,34 @@ namespace cbu {
         }
         fpath(string s) {
             p = std::string(s);
+            copy = std::string(p);
         }
         fpath(std::filesystem::path p) {
             this->p = p;
+            copy = std::string(p);
         }
         fpath(std::string str) {
             p = str;
+            copy = std::string(p);
         }
         fpath(const char *c) {
             p = c;
+            copy = std::string(p);
         }
         fpath operator/(const fpath &other) const {
             return p / other.p;
+        }
+        fpath &operator+=(const fpath &other) {
+            p += other.p;
+            copy = string(p);
+
+            return *this;
+        }
+        bool operator==(const fpath &other) {
+            return p == other.p;
+        }
+        bool operator==(const string &other) {
+            return p == other;
         }
 
         operator std::filesystem::path() const {
@@ -60,14 +76,47 @@ namespace cbu {
             return p.string();
 #endif
         }
+        operator std::string() const {
+            return string(*this);
+        }
+        operator const char *() const {
+            return copy;
+        }
 
+        bool empty() const {
+            return p.empty();
+        }
         fpath parent_path() const {
-
+            return p.parent_path();
+        }
+        fpath extension() const {
+            return p.extension();
+        }
+        bool has_parent_path() const {
+            return p.has_parent_path();
         }
     private:
         std::filesystem::path p;
+        string copy;
     };
+}
 
+
+using fpath = cbu::fpath;
+using BYTEARRAY = std::vector<U8>;
+
+template<>
+struct std::formatter<fpath> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    auto format(const fpath& f, std::format_context& ctx) const {
+        return std::format_to(ctx.out(),"{}",f);
+    }
+};
+
+namespace cbu {
     static fpath get_userdata_dir() {
         static const fpath k = []() -> fpath {
             #ifdef _WIN32
@@ -150,73 +199,69 @@ namespace cbu {
     }
     inline fpath resolve_path(string str) {
         fpath path;
-        if (str.substr(0,6) == "res://") {
+        if (str.starts_with("res://")) {
             path = get_res_dir() / str.substr(6);
         }
-        else if (str.substr(0,7) == "user://") {
+        else if (str.starts_with("user://")) {
             path = get_user_dir() / str.substr(7);
         }
-        else if (str.substr(0,8) == "cache://") {
+        else if (str.starts_with("cache://")) {
             path = cache_path() / str.substr(8);
         }
         else path = str;
 
         return path;
     }
-    inline fpath resolve_path(fpath p) {
-        return resolve_path(string(p));
-    }
     inline std::string require_file_path(fpath path) {
-        std::ifstream file(path,std::ios::in);
-        if (!file) throw std::runtime_error(std::string("Failed to open: ") + path_to_utf8(path).c_str());
+        std::ifstream file{std::string(path),std::ios::in};
+        if (!file) cbu::log_error(true,std::format("Failed to open {}",path));
 
         std::ostringstream ss;
         ss << file.rdbuf();
         return ss.str();
     }
     inline BYTEARRAY require_file_binary_path(fpath path) {
-        std::ifstream file(path, std::ios::binary | std::ios::in);
-        if (!file) throw std::runtime_error(std::string("Failed to open: ") + path_to_utf8(path).c_str());
+        std::ifstream file(std::string(path), std::ios::binary | std::ios::in);
+        if (!file) cbu::log_error(true,std::format("Failed to open {}",path));
 
         file.seekg(0, std::ios::end);
         std::streamsize size = file.tellg();
-        if (size < 0) throw std::runtime_error(std::string("Failed to read: ") + path_to_utf8(path).c_str());
+        if (size < 0) cbu::log_error(true,std::format("Failed to read {}",path));
         file.seekg(0, std::ios::beg);
 
         std::vector<unsigned char> data(static_cast<size_t>(size));
-        if (size > 0 && !file.read(reinterpret_cast<char*>(data.data()), size))
-            throw std::runtime_error(std::string("Failed to read: ") + path_to_utf8(path).c_str());
+        if (size > 0 && !file.read(reinterpret_cast<char*>(data.data()), size)) cbu::log_error(true,std::format("Failed to read {}",path));
 
         return data;
     }
 
-    inline std::string require_file(const char* path) {
+    inline std::string require_file(fpath path) {
         return require_file_path(resolve_path(path));
     }
-    inline BYTEARRAY require_file_binary(const char* path) {
+    inline BYTEARRAY require_file_binary(fpath path) {
         return require_file_binary_path(resolve_path(path));
     }
     inline void write_to_file_safe(fpath fpath,string &data) {
-        cbu::log_debug(std::format("Writing safe to file {}",cbu::path_to_utf8(fpath)));
+        cbu::log_debug(std::format("Writing safe to file {}",fpath));
         if (fpath.has_parent_path()) {
             std::filesystem::create_directories(fpath.parent_path());
         }
 
-        std::ofstream ofs(fpath, std::ios::binary | std::ios::trunc);
-        ofs.write(data.data(), static_cast<std::streamsize>(data.size()));
+        std::ofstream ofs{std::string(fpath), std::ios::binary | std::ios::trunc};
+        ofs.write(std::string(data).data(), static_cast<std::streamsize>(data.size()));
     }
     inline void write_to_file_safe_binary(fpath fpath,BYTEARRAY &data) {
-        cbu::log_debug(std::format("Writing safe to file {}",cbu::path_to_utf8(fpath)));
+        cbu::log_debug(std::format("Writing safe to file {}",fpath));
         if (fpath.has_parent_path()) {
             std::filesystem::create_directories(fpath.parent_path());
         }
 
-        std::ofstream ofs(fpath, std::ios::binary | std::ios::out | std::ios::trunc);
+        std::ofstream ofs(std::string(fpath), std::ios::binary | std::ios::out | std::ios::trunc);
         ofs.write(reinterpret_cast<const char*>(data.data()),
                   static_cast<std::streamsize>(data.size()));
     }
-    inline bool write_file_empty(const fpath path) {
-        std::ofstream file(path);
+    inline bool write_file_empty(fpath path) {
+        std::ofstream file{std::string(path)};
         return file.good();
     }
 
@@ -253,5 +298,5 @@ namespace cbu {
     }
 }
 
-using fpath = cbu::fpath;
-using BYTEARRAY = std::vector<U8>;
+
+
