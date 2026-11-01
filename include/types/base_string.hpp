@@ -34,6 +34,17 @@ namespace cbu {
             }
             copy = to_utf8();
         }
+        string(letter c) {
+            data = {c};
+            try {
+                copy = to_utf8();
+            } catch (error err) {
+                cbu::log_error(false,std::format("string error: {}",err.what()));
+
+                data = {};
+                copy = {};
+            }
+        }
         string(vector<letter> d) {
             data = d;
             try {
@@ -188,6 +199,13 @@ namespace cbu {
         inline size_t size() const {
             return data.size();
         }
+        inline void insert(size_t index,string sub) {
+            data.insert(data.begin() + index,sub.begin(),sub.end());
+        }
+        inline void erase(size_t index,size_t len) {
+            data.erase(data.begin() + index, data.begin() + index + len);
+        }
+
         using iterator = typename vector<letter>::iterator;
         using const_iterator = typename vector<letter>::const_iterator;
         inline iterator begin() {

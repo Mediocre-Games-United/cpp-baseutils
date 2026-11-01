@@ -112,7 +112,7 @@ struct std::formatter<fpath> {
     }
 
     auto format(const fpath& f, std::format_context& ctx) const {
-        return std::format_to(ctx.out(),"{}",f);
+        return std::format_to(ctx.out(),"{}",std::string(f));
     }
 };
 
