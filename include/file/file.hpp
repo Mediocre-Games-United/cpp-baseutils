@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_types.hpp"
+#include "base_string.hpp"
 #include "find_config.h"
 #include "logger.hpp"
 #include <cstddef>
@@ -17,29 +18,56 @@
 #endif
 
 
-typedef std::vector<U8> BYTEARRAY;
-typedef std::vector<fpath> PATHARRAY;
-
 namespace cbu {
-    inline std::string path_to_utf8(const fpath& p) {
-        #ifdef _WIN32
-        std::wstring ws = p.wstring(); // UTF-16 on Windows
-        if (ws.empty()) return {};
+    class fpath {
+    public:
+        fpath() {
 
-        int needed = WideCharToMultiByte(CP_UTF8, 0,
-                                         ws.data(), (int)ws.size(),
-                                         nullptr, 0, nullptr, nullptr);
-        std::string out(needed, '\0');
-        WideCharToMultiByte(CP_UTF8, 0,
-                            ws.data(), (int)ws.size(),
-                            out.data(), needed, nullptr, nullptr);
-        return out;
-        #else
-        // Non-Windows: assume filenames are already representable as narrow bytes for your environment.
-        // (This avoids wchar_t/wide conversions.)
-        return p.string();
-        #endif
-    }
+        }
+        fpath(string s) {
+            p = std::string(s);
+        }
+        fpath(std::filesystem::path p) {
+            this->p = p;
+        }
+        fpath(std::string str) {
+            p = str;
+        }
+        fpath(const char *c) {
+            p = c;
+        }
+        fpath operator/(const fpath &other) const {
+            return p / other.p;
+        }
+
+        operator std::filesystem::path() const {
+            return p;
+        }
+        operator string() const {
+#ifdef _WIN32
+            std::wstring ws = p.wstring(); // UTF-16 on Windows
+            if (ws.empty()) return {};
+
+            int needed = WideCharToMultiByte(CP_UTF8, 0,
+                                             ws.data(), (int)ws.size(),
+                                             nullptr, 0, nullptr, nullptr);
+            std::string out(needed, '\0');
+            WideCharToMultiByte(CP_UTF8, 0,
+                                ws.data(), (int)ws.size(),
+                                out.data(), needed, nullptr, nullptr);
+            return out;
+#else
+            return p.string();
+#endif
+        }
+
+        fpath parent_path() const {
+
+        }
+    private:
+        std::filesystem::path p;
+    };
+
     static fpath get_userdata_dir() {
         static const fpath k = []() -> fpath {
             #ifdef _WIN32
@@ -120,8 +148,7 @@ namespace cbu {
 
         return p;
     }
-    inline fpath resolve_path(const char *p) {
-        std::string str = std::string(p);
+    inline fpath resolve_path(string str) {
         fpath path;
         if (str.substr(0,6) == "res://") {
             path = get_res_dir() / str.substr(6);
@@ -132,12 +159,12 @@ namespace cbu {
         else if (str.substr(0,8) == "cache://") {
             path = cache_path() / str.substr(8);
         }
-        else path = p;
+        else path = str;
 
         return path;
     }
     inline fpath resolve_path(fpath p) {
-        return resolve_path(path_to_utf8(p).c_str());
+        return resolve_path(string(p));
     }
     inline std::string require_file_path(fpath path) {
         std::ifstream file(path,std::ios::in);
@@ -225,3 +252,6 @@ namespace cbu {
         return exe_dir();
     }
 }
+
+using fpath = cbu::fpath;
+using BYTEARRAY = std::vector<U8>;
