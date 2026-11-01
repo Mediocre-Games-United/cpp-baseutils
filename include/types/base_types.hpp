@@ -10,8 +10,11 @@
 #include <vector>
 #include <functional>
 #include <queue>
+#include "base_string.hpp"
 
-using string = std::string;
+using string = cbu::string;
+using stringname = cbu::StringName;
+
 using letter = char32_t;
 using fpath = std::filesystem::path;
 template <typename T>
