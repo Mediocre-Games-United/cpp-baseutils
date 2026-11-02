@@ -58,7 +58,7 @@ namespace cbu {
         return sign(x) == sign(y);
     }
     template<typename X>
-    inline X lerp(X &src,X &tgt,F64 alpha) {
+    inline X lerp(const X &src,const X &tgt,F64 alpha) {
         return src + (tgt - src) * alpha;
     }
 }
