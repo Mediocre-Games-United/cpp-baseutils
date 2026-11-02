@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_types.hpp"
+#include <cassert>
 #include <filesystem>
 #include <format>
 #include <string_view>
@@ -70,8 +71,8 @@ namespace cbu {
         bool operator==(const char *other) const {
             return *this == string(other);
         }
-        letter operator[](size_t i) const {
-            cbu::log_debug(std::format("Get index {} size {}",i,size()));
+        letter operator[](const size_t &i) const {
+            if (i >= size()) throw error(std::format("String index {} is out of range: {}",i,size()));
 
             return data[i];
         }
@@ -136,42 +137,49 @@ namespace cbu {
             return n.data;
         }
         inline string substr(size_t start,size_t len = -1) const {
+            if (start >= size()) return "";
             return vector<letter>(data.begin() + start,data.begin() + start + cbu::min(len,size() - start));
         }
         inline bool starts_with(string other) const {
+            if (other.size() > size()) return false;
             string sub = substr(0,other.size());
             return sub == other;
         }
-        inline bool end_with(string other) const {
+        inline bool ends_with(string other) const {
+            if (other.size() > size()) return false;
             string sub = substr(size() - other.size(),other.size());
             return sub == other;
         }
 
-        inline vector<string> split(string splitter) {
+        inline vector<string> split(const string& splitter) const {
             vector<string> res;
+            if (splitter.empty()) return res;
+            if (splitter.size() > size()) return res;
 
-            size_t p = 0;
+            const size_t n = size();
+            const size_t m = splitter.size();
+            size_t start = 0;
             size_t i = 0;
-            size_t si = 0;
-            size_t sc = splitter.size();
-            for (letter c : data) {
-                if (c != splitter.data[si]) {
-                    i += 1;
-                    si = 0;
-                    continue;
+
+            while (i + m <= n) {
+                size_t j = 0;
+                while (j < m && data[i + j] == splitter.data[j])
+                    ++j;
+
+                if (j == m) {
+                    res.push_back(substr(start, i - start));
+                    i += m;
+                    start = i;
+                } else {
+                    ++i;
                 }
-
-                si += 1;
-                i += 1;
-                if (si < sc) continue;
-
-                res.push_back(substr(p,i - p - 1));
-                p = i;
             }
-            if (p < i) res.push_back(substr(p,i - p));
 
+            // Keeps any remaining text, including an empty trailing field.
+            res.push_back(substr(start, n - start));
             return res;
         }
+
 
         inline void trim()
         {
@@ -199,6 +207,10 @@ namespace cbu {
         }
 
 
+        inline void clear() {
+            data.clear();
+            copy.clear();
+        }
         inline bool empty() const {
             return data.empty();
         }
@@ -212,6 +224,16 @@ namespace cbu {
         }
         inline void erase(size_t index,size_t len) {
             data.erase(data.begin() + index, data.begin() + index + len);
+        }
+        inline bool find(letter c,size_t *pos) const {
+            for (size_t i = 0; i < data.size(); i ++) {
+                if (data[i] != c) continue;
+
+                *pos = i;
+                return true;
+            }
+
+            return false;
         }
 
         using iterator = typename vector<letter>::iterator;

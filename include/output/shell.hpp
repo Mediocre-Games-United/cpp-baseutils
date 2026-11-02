@@ -2,6 +2,7 @@
 
 #include "base_types.hpp"
 #include "file.hpp"
+#include "base_string.hpp"
 #include "logger.hpp"
 
 #include <cerrno>
@@ -362,10 +363,10 @@ namespace cbu {
             // Do not close pty_master here; forkpty has already arranged
             // the child's standard streams.
 
-            string directory_string = path_to_utf8(directory);
+            string directory_string = directory;
 
             if (!directory_string.empty() &&
-                chdir(directory_string.c_str()) == -1) {
+                chdir(directory_string) == -1) {
                 dprintf(
                     STDERR_FILENO,
                     "chdir failed: %s\n",
@@ -378,7 +379,7 @@ namespace cbu {
                     "/bin/sh",
                     "sh",
                     "-c",
-                    command.c_str(),
+                    (const char*) command,
                       static_cast<char*>(nullptr)
                 );
 
@@ -444,10 +445,13 @@ namespace cbu {
                     std::cout.write(buffer, bytes_read);
                     std::cout.flush();
                 } else {
-                    output->append(
+                    std::string bfr = "";
+
+                    bfr.append(
                         buffer,
-                        static_cast<string::size_type>(bytes_read)
+                        static_cast<std::string::size_type>(bytes_read)
                     );
+                    output->insert(output->size(),bfr);
                 }
             } else if (bytes_read == -1 &&
                 (errno == EIO || errno == EPIPE)) {

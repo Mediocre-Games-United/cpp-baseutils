@@ -49,11 +49,14 @@ namespace cbu {
 
             return *this;
         }
-        bool operator==(const fpath &other) {
+        bool operator==(const fpath &other) const {
             return p == other.p;
         }
-        bool operator==(const string &other) {
+        bool operator==(const string &other) const {
             return p == other;
+        }
+        bool operator==(const char *other) const {
+            return p == string(other);
         }
 
         operator std::filesystem::path() const {
@@ -95,6 +98,19 @@ namespace cbu {
         bool has_parent_path() const {
             return p.has_parent_path();
         }
+        fpath filename() const {
+            return p.filename();
+        }
+        fpath stem() const {
+            return p.stem();
+        }
+        bool is_relative() const {
+            return p.is_relative();
+        }
+        bool is_absolute() const {
+            return p.is_absolute();
+        }
+
     private:
         std::filesystem::path p;
         string copy;
