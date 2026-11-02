@@ -4,11 +4,14 @@
 
 class vec {
 public:
-    vec(): x(0), y(0) {}
+    vec() {
+        x = 0;
+        y = 0;
+    }
     vec(const F64 &ix,const F64 &iy): x(ix), y(iy) {}
 
-    F64 x;
-    F64 y;
+    F64 x = 0;
+    F64 y = 0;
 
     inline vec operator-() const {
         return vec(-x,-y);
@@ -83,7 +86,7 @@ struct std::formatter<vec> {
     }
 
     auto format(const vec& v, std::format_context& ctx) const {
-        return std::format_to(ctx.out(),"{}",v);
+        return std::format_to(ctx.out(),"{}",std::string(v));
     }
 };
 
