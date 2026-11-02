@@ -98,20 +98,10 @@ namespace cbu {
         }
 
         operator std::string() const {
-            try {
-                return to_utf8();
-            } catch (error err) {
-                cbu::log_error(false,std::format("string error: {}",err.what()));
-                return {};
-            }
+            return copy;
         }
         operator std::filesystem::path() const {
-            try {
-                return to_utf8();
-            } catch (error err) {
-                cbu::log_error(false,std::format("string error: {}",err.what()));
-                return {};
-            }
+            return copy;
         }
         operator const char *() const {
             return copy.c_str();
@@ -127,7 +117,7 @@ namespace cbu {
             std::string self;
         };
 
-        inline string to_uppercase() {
+        inline string to_uppercase() const {
             string n = *this;
 
             std::transform(n.data.begin(),n.data.end(),n.data.begin(),[](letter c) {
@@ -181,8 +171,7 @@ namespace cbu {
         }
 
 
-        inline void trim()
-        {
+        inline void trim() {
             while (!data.empty() &&
                 std::isspace(data.back())) {
                 data.pop_back();
@@ -218,12 +207,26 @@ namespace cbu {
             return data.size();
         }
         inline void insert(size_t index,string sub) {
-            cbu::log_debug(std::format("Pre insert index {} size {} insert size {}",index,size(),sub.size()));
             data.insert(data.begin() + index,sub.data.begin(),sub.data.end());
-            cbu::log_debug(std::format("Post insert size {}",size()));
+            try {
+                copy = to_utf8();
+            } catch (error err) {
+                cbu::log_error(false,std::format("string error: {}",err.what()));
+
+                data = {};
+                copy = {};
+            }
         }
         inline void erase(size_t index,size_t len) {
             data.erase(data.begin() + index, data.begin() + index + len);
+            try {
+                copy = to_utf8();
+            } catch (error err) {
+                cbu::log_error(false,std::format("string error: {}",err.what()));
+
+                data = {};
+                copy = {};
+            }
         }
         inline bool find(letter c,size_t *pos) const {
             for (size_t i = 0; i < data.size(); i ++) {

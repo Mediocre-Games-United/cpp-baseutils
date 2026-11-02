@@ -80,7 +80,7 @@ namespace cbu {
 #endif
         }
         operator std::string() const {
-            return string(*this);
+            return copy;
         }
         operator const char *() const {
             return copy;
