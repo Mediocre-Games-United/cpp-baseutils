@@ -5,30 +5,30 @@
 class vec {
 public:
     vec(): x(0), y(0) {}
-    vec(F64 ix,F64 iy): x(ix), y(iy) {}
+    vec(const F64 &ix,const F64 &iy): x(ix), y(iy) {}
 
     F64 x;
     F64 y;
 
-    inline vec operator-() {
+    inline vec operator-() const {
         return vec(-x,-y);
     }
-    inline vec operator+(const vec &other) {
+    inline vec operator+(const vec &other) const {
         return vec(x + other.x,y + other.y);
     }
-    inline vec operator-(const vec &other) {
+    inline vec operator-(const vec &other) const {
         return vec(x - other.x,y - other.y);
     }
-    inline vec operator*(const vec &other) {
+    inline vec operator*(const vec &other) const {
         return vec(x * other.x,y * other.y);
     }
-    inline vec operator/(const vec &other) {
+    inline vec operator/(const vec &other) const {
         return vec(x / other.x,y / other.y);
     }
-    inline vec operator*(const F64 &other) {
+    inline vec operator*(const F64 &other) const {
         return vec(x * other,y * other);
     }
-    inline vec operator/(const F64 &other) {
+    inline vec operator/(const F64 &other) const {
         return vec(x / other,y / other);
     }
     inline vec &operator+=(const vec &other) {
@@ -52,15 +52,15 @@ public:
         return *this;
     }
 
-    inline F64 magnitude() {
+    inline F64 magnitude() const {
         return std::sqrt(x * x + y * y);
     }
-    inline vec unit() {
+    inline vec unit() const {
         F64 m = magnitude();
         if (m <= 0) return vec::zero();
         return *this / magnitude();
     }
-    inline vec abs() {
+    inline vec abs() const {
         return vec(std::abs(x),std::abs(y));
     }
 
