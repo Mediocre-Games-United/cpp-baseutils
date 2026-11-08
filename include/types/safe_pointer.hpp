@@ -99,8 +99,8 @@ private:
 
         p = o;
         c_obj = p->destroyed.add_callback([this]() {
-            cbu::log_verbose(std::format(
-                "Safepointer {} destroyed", static_cast<void*>(p)));
+            // cbu::log_verbose(std::format(
+            //     "Safepointer {} destroyed", static_cast<void*>(p)));
 
             // The observed object is being destroyed, so don't call
             // remove_callback on its event from inside this callback.
@@ -111,8 +111,8 @@ private:
 
         valid = true;
 
-        cbu::log_verbose(std::format(
-            "Safepointer {} connected", static_cast<void*>(p)));
+        // cbu::log_verbose(std::format(
+        //     "Safepointer {} connected", static_cast<void*>(p)));
     }
 
     void disconnect() {
@@ -131,8 +131,8 @@ private:
         p = nullptr;
         c_obj = nullptr;
 
-        cbu::log_verbose(std::format(
-            "Safepointer {} disconnected", static_cast<void*>(old_p)));
+        // cbu::log_verbose(std::format(
+        //     "Safepointer {} disconnected", static_cast<void*>(old_p)));
 
         old_p->destroyed.remove_callback(old_callback);
     }
