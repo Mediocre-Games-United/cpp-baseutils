@@ -7,6 +7,9 @@ namespace cbu {
         WorkerState worker_state{};
         std::mutex cli_mutex{};
         std::mutex logger_mutex{};
+
+        bool logger_only_important = false;
+        bool logger_enabled = true;
 #ifdef VERBOSE
         bool verbose = true;
 #else

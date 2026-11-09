@@ -3,6 +3,7 @@
 #include "base_types.hpp"
 #include "time.hpp"
 #include <chrono>
+#include "base_string.hpp"
 
 #ifndef CURRENT_TEST_NAME
 #define CURRENT_TEST_NAME "<unknown>"

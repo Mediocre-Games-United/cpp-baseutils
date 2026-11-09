@@ -1,5 +1,6 @@
 #ifdef IS_IN_TEST
 
+#include "cbu_state.hpp"
 #include "logger.hpp"
 #include "time.hpp"
 #include "unit_test.hpp"
@@ -16,7 +17,10 @@ Clock main_clock{};
 int main(int argc,char **argv) {
     test_result res{};
 
+    cbu::log_info(std::format("Running test {}...",CURRENT_TEST_NAME));
+    global_state.logger_enabled = false;
     test_main(res,argc,argv);
+    global_state.logger_enabled = true;
 
     F64 time = res.get_runtime();
     if (!res.success) {
