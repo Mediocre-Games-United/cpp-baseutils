@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cbu_state.hpp"
-#include "find_config.h"
+#include "find_config.hpp"
 #include "ansi.hpp"
 #include "base_types.hpp"
 #include "file.hpp"

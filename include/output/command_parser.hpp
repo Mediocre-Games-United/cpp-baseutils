@@ -5,7 +5,7 @@
 #include "logger.hpp"
 #include <format>
 #include <unordered_set>
-#include "find_config.h"
+#include "find_config.hpp"
 
 namespace cbu {
     struct parser_flag {

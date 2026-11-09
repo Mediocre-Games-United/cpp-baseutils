@@ -2,7 +2,7 @@
 
 #include "base_types.hpp"
 #include "base_string.hpp"
-#include "find_config.h"
+#include "find_config.hpp"
 #include "logger.hpp"
 #include <cstddef>
 #include <cstdint>
