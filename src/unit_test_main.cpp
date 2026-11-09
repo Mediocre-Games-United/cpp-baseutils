@@ -5,7 +5,7 @@
 #include "time.hpp"
 #include "unit_test.hpp"
 #include "base_types.hpp"
-#include "find_config.h"
+#include "find_config.hpp"
 #include <format>
 #include "os.hpp"
 
