@@ -13,6 +13,10 @@
 #warning no config.hpp file found!!
 #endif
 
+#if __has_include("extra_config.hpp")
+#include "extra_config.hpp"
+#endif
+
 #ifndef CONFIG_FILE_USED
 #error no config.hpp or config_def.hpp found!
 #endif

@@ -11,7 +11,6 @@
 #define APP_ID          (CMP_NAME ":" APP_NAME)
 
 #define STUDIO_NAME "Mediocre Games United"
-#define ENGINE_NAME "Made with Simple2D"
 
 #ifndef GIT_COMMIT
 #define GIT_COMMIT "unknown"
@@ -25,8 +24,6 @@
 #define BUILD_STRING STR(GIT_COMMIT) "@" STR(BUILD_TIME)
 
 
-#define INIT_CANVAS_W 800
-#define INIT_CANVAS_H 600
 
 #ifndef VERSION_MAJOR
 #define VERSION_MAJOR 0
@@ -63,9 +60,3 @@
 
 #define FULL_VERSION_STRING VERSION_STRING "  -  " BUILD_STRING
 
-#ifndef COLLISION_CELL_SIZE
-#define COLLISION_CELL_SIZE 1024
-#endif
-#ifndef UNIT_SCALE
-#define UNIT_SCALE 64.0
-#endif
