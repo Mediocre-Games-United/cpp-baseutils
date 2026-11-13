@@ -15,6 +15,7 @@
 #ifdef _WIN32
 #include "windows.h"
 #include <shlobj.h>
+#include <fileapi.h>
 #endif
 
 
@@ -202,6 +203,13 @@ namespace cbu {
         return "";
     }
 
+    inline void set_file_hidden(fpath path) {
+#ifdef _WIN32
+        SetFileAttributesA(path,FILE_ATTRIBUTE_HIDDEN);
+#else
+      // assume file already begins with a . to make it hidden
+#endif
+    }
 
     static fpath get_res_dir() {
         fpath p = get_parent_dir() / "resources";
