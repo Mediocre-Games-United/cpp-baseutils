@@ -1,10 +1,11 @@
 #include "glw.hpp"
-#include "logger.hpp"
-#include <SDL3/SDL.h>
-#include <GL/gl.h>
-#include <format>
 
 #ifdef CBU_ENABLE_GL
+
+#include <SDL3/SDL.h>
+#include <GL/gl.h>
+#include "logger.hpp"
+#include <format>
 
 template <typename func>
 func glf_get_addr(const char *name) {
