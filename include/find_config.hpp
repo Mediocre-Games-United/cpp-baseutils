@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIND_CONFIG_HPP
+#define FIND_CONFIG_HPP
 
 #define FIND_CONFIG
 
@@ -19,4 +20,6 @@
 
 #ifndef CONFIG_FILE_USED
 #error no config.hpp or config_def.hpp found!
+#endif
+
 #endif
