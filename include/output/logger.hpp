@@ -95,6 +95,8 @@ namespace cbu {
 #ifndef VERBOSE
 #ifdef CBU_ENABLE_GLOBAL_STATE
         if (!global_state.verbose) return;
+#else
+        return;
 #endif
 #endif
         LOGGER_GET_MUTEX;
