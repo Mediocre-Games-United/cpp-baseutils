@@ -92,9 +92,10 @@ namespace cbu {
     inline void log_verbose(std::string txt) {
         CBU_LOGGER_ENABLED;
         CBU_LOGGER_IMPORTANT;
-
 #ifndef VERBOSE
+#ifdef CBU_ENABLE_GLOBAL_STATE
         if (!global_state.verbose) return;
+#endif
 #endif
         LOGGER_GET_MUTEX;
         detail::print_log("\033[34m", "VERBOSE", txt);
