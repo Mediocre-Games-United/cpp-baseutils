@@ -10,6 +10,10 @@
 
 #define APP_ID          (CMP_NAME ":" APP_NAME)
 
+#ifndef APP_ID_FULL
+#define APP_ID_FULL "com.example." APP_NAME
+#endif
+
 #define STUDIO_NAME "Mediocre Games United"
 
 #ifndef GIT_COMMIT
