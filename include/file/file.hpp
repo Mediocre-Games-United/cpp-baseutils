@@ -112,6 +112,16 @@ namespace cbu {
             return p.is_absolute();
         }
 
+        fpath relative(fpath base) const {
+            return std::filesystem::relative(p,base.p);
+        }
+        bool is_directory() const {
+            return std::filesystem::is_directory(p);
+        }
+        bool is_file() const {
+            return std::filesystem::is_regular_file(p);
+        }
+
     private:
         std::filesystem::path p;
         string copy;
@@ -130,6 +140,13 @@ struct std::formatter<fpath> {
 
     auto format(const fpath& f, std::format_context& ctx) const {
         return std::format_to(ctx.out(),"{}",std::string(f));
+    }
+};
+
+template<>
+struct std::hash<fpath> {
+    size_t operator()(const fpath& p) const noexcept {
+        return std::hash<stringname>{}(std::string(p));
     }
 };
 

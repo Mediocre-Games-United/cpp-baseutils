@@ -15,6 +15,12 @@ namespace cbu {
 #else
         bool verbose = false;
 #endif
+#ifndef RELEASE
+        bool debug = true;
+#else
+        bool debug = false;
+#endif
+
     };
 
     extern GlobalCBUState global_state;

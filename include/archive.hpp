@@ -1,60 +1,56 @@
 #pragma once
 
-#include "find_config.hpp"
+#include "get_enabled_modules.hpp"
 #ifdef ARCHIVE_ENABLED
 
 #include "archive.h"
 #include "archive_entry.h"
 #include "file.hpp"
 #include <map>
+#include <filesystem>
 
-class CompressedArchive {
+#include <sys/types.h>
+
+class BaseArchive {
 public:
-    using BYTEARRAY = std::vector<U8>;
-    using fpath = std::filesystem::path;
-    using string = std::string;
+    BaseArchive() = default;
 
-    CompressedArchive();
-    explicit CompressedArchive(const fpath& diskPath);
+    bool compress_folder_single(fpath folderpath,fpath outpath);
+    bool extract_archive_single(fpath archivepath,fpath folderpath);
 
-    bool has_file(string rpath);
-    BYTEARRAY require_file(string rpath);
-    void write_file(string rpath, BYTEARRAY& data);
+    void add_entry(fpath relpath,BYTEARRAY stream);
+    BYTEARRAY get_entry(fpath relpath);
+    bool has_entry(fpath relpath);
 
-    bool is_empty() const;
+    bool save_to_file(fpath apath);
+    bool load_from_file(fpath apath);
+private:
+    struct entry {
+        bool exists = false;
+        BYTEARRAY data;
+        fpath rel;
+        mode_t perm;
+    };
+    virtual void set_filters(archive *a) = 0;
+    bool read_entry_from_archive(archive *a,archive_entry *entry,struct entry *out);
+    bool write_entry_to_archive(archive *a,fpath relpath,struct entry in);
 
-    bool read_from_file_safe(fpath fpath);
+    fpath _archive_path;
+    umap<fpath,entry> _entries;
+};
 
-    // Writes the in-memory archive back to disk using file.hpp
-    bool write_to_file(fpath fpath);
+class ArchiveTarGZ : public BaseArchive {
+public:
 
 private:
-    enum class EntryType { RegularFile };
-
-    struct Entry {
-        EntryType type = EntryType::RegularFile;
-        std::vector<U8> data;
-        mode_t perm = 0644;
-        S64 mtime = 0;
-    };
-
-    std::map<string, Entry> entries_;
-
-    static string normalize_rpath(string rpath);
-    static bool is_path_unsafe_in_archive(const string& s);
-
-    bool read_tar_gz_from_disk(const fpath& diskPath);
-
-    static bool read_entry_from_archive(struct archive* a,
-                                        struct archive_entry* entry,
-                                        std::map<string, Entry>& out);
-
-    static bool write_entry_to_archive(struct archive* a,
-                                       const string& name,
-                                       const Entry& e);
-
-    // Builds a .tar.gz into memory and returns the resulting bytes.
-    BYTEARRAY write_to_bytes_safe();
+    void set_filters(archive *a) override;
 };
+class ArchiveZIP : public BaseArchive {
+public:
+
+private:
+    void set_filters(archive *a) override;
+};
+
 
 #endif

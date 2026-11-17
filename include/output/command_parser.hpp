@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_types.hpp"
+#include "cbu_state.hpp"
 #include "cli.hpp"
 #include "logger.hpp"
 #include <format>
@@ -61,7 +62,7 @@ namespace cbu {
     inline void set_parser_help(parser_output &pt,vector<parser_flag> flags,vector<parser_val> vals) {
         pt.valid = true;
         pt.can_proceed = false;
-        string full = "[--version] Show the version information\n[-h] [--help] Show this list\n";
+        string full = "[--version] Show the version information\n[-h] [--help] Show this list\n[-v] [--verbose] Enable verbose and debug logs\n";
         for (auto &s : flags) {
             full += format_flag_name(s);
 
@@ -86,6 +87,7 @@ namespace cbu {
 
         cbu::cli_output(std::format("---\nVersion: {}\n---",VERSION_STRING));
     }
+
     inline parser_output parse_args(int argc,char **argv,vector<parser_flag> flags,vector<parser_val> vals) {
         parser_output output{};
 
@@ -118,6 +120,9 @@ namespace cbu {
                 } if (lg == "version") {
                     set_parser_version(output);
                     return output;
+                } if (lg == "verbose") {
+                    global_state.verbose = true;
+                    global_state.debug = true;
                 }
                 std::optional<parser_flag> fl{};
                 for (auto &s : flags) {
@@ -161,6 +166,9 @@ namespace cbu {
                 if (c == 'h') {
                     set_parser_help(output,flags,vals);
                     return output;
+                } if (c == 'v') {
+                    global_state.debug = true;
+                    global_state.verbose = true;
                 }
 
                 std::optional<parser_flag> fl{};
