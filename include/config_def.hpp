@@ -1,12 +1,12 @@
 #pragma once
 
 #ifndef FIND_CONFIG
-#error Please include find_config.h instead!
+#error Please include find_config.hpp instead of config_def.hpp or config.hpp!
 #endif
 
 #define CMP_NAME "mgu"
-#define APP_NAME "<no app name found, define APP_NAME in config.h!>"
-#define APP_NAME_FULL "<no full app name found, define APP_NAME_FULL in config.h!>"
+#define APP_NAME "<no app name found, define APP_NAME in config.hpp!>"
+#define APP_NAME_FULL "<no full app name found, define APP_NAME_FULL in config.hpp!>"
 
 #define APP_ID          (CMP_NAME ":" APP_NAME)
 

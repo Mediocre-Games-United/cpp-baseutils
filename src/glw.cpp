@@ -1,6 +1,6 @@
 #include "glw.hpp"
 
-#ifdef CBU_ENABLE_GL
+#ifdef CBU_GL_ENABLED
 
 #include <SDL3/SDL.h>
 #include <GL/gl.h>

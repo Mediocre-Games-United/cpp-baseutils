@@ -1,6 +1,6 @@
 #include "archive.hpp"
 #include <filesystem>
-#ifdef ARCHIVE_ENABLED
+#ifdef CBU_ARCHIVE_ENABLED
 
 #include "file.hpp"
 #include "logger.hpp"

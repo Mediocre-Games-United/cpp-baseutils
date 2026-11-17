@@ -7,6 +7,12 @@
 #include <format>
 #include <unordered_set>
 #include "find_config.hpp"
+#include "get_enabled_modules.hpp"
+
+#if __has_include("extra_modules.hpp")
+#define EXTRA_MODULES
+#include "extra_modules.hpp"
+#endif
 
 namespace cbu {
     struct parser_flag {
@@ -123,6 +129,23 @@ namespace cbu {
                 } if (lg == "verbose") {
                     global_state.verbose = true;
                     global_state.debug = true;
+                } if (lg == "dump") {
+                    output.can_proceed = false;
+                    output.valid = true;
+                    cbu::log_info(std::format("Build: {}",BUILD_STRING));
+                    cbu::log_info(std::format("Version: {}",VERSION_STRING));
+                    cbu::log_info(std::format("Appid: {}, full: {}",APP_ID,APP_ID_FULL));
+                    cbu::log_info(std::format("App: {}, studio: {}",APP_NAME_FULL,STUDIO_NAME));
+#ifdef CBU_ARCHIVE_ENABLED
+                    cbu::log_info("Module: Archive enabled");
+#endif
+#ifdef CBU_GL_ENABLED
+                    cbu::log_info("Module: GL enabled");
+#endif
+#ifdef EXTRA_MODULES
+                    dump_extra_modules();
+#endif
+                    return output;
                 }
                 std::optional<parser_flag> fl{};
                 for (auto &s : flags) {

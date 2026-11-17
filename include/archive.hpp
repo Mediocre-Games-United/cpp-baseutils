@@ -1,7 +1,7 @@
 #pragma once
 
 #include "get_enabled_modules.hpp"
-#ifdef ARCHIVE_ENABLED
+#ifdef CBU_ARCHIVE_ENABLED
 
 #include "archive.h"
 #include "archive_entry.h"

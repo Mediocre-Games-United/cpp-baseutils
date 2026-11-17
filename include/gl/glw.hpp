@@ -1,7 +1,7 @@
 #pragma once
-#include "find_config.hpp"
+#include "get_enabled_modules.hpp"
 
-#ifdef CBU_ENABLE_GL
+#ifdef CBU_GL_ENABLED
 
 #include <GL/gl.h>
 
