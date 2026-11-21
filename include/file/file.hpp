@@ -27,26 +27,26 @@ namespace cbu {
         }
         fpath(string s) {
             p = std::string(s);
-            copy = std::string(p);
+            copy = s;
         }
         fpath(std::filesystem::path p) {
             this->p = p;
-            copy = std::string(p);
+            copy = p.string();
         }
         fpath(std::string str) {
             p = str;
-            copy = std::string(p);
+            copy = str;
         }
         fpath(const char *c) {
             p = c;
-            copy = std::string(p);
+            copy = c;
         }
         fpath operator/(const fpath &other) const {
             return p / other.p;
         }
         fpath &operator+=(const fpath &other) {
             p += other.p;
-            copy = string(p);
+            copy = p.string();
 
             return *this;
         }
