@@ -4,6 +4,7 @@
 #ifdef CBU_GL_ENABLED
 
 #include <GL/gl.h>
+#include <GL/glcorearb.h>
 
 GLuint glCreateShader(GLenum type);
 void glShaderSource(GLuint shader, GLsizei count,
@@ -74,5 +75,8 @@ void glDrawArraysInstanced(GLenum mode, GLint first, GLsizei count,
 
 void glVertexAttribDivisor(GLuint index, GLuint divisor);
 
+#ifdef _WIN32
+void APIENTRY glActiveTexture(GLenum texture);
+#endif
 
 #endif

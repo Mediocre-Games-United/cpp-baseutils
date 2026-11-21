@@ -266,6 +266,14 @@ void glVertexAttribDivisor(GLuint index, GLuint divisor) {
     addr(index, divisor);
 }
 
+#ifdef _WIN32
+void APIENTRY glActiveTexture(GLenum texture) {
+    static auto addr = GET_ADDR("glActiveTexture", void,
+                                (GLenum texture));
+    addr(texture);
+}
+#endif
+
 
 
 #endif
