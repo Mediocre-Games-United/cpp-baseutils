@@ -15,7 +15,7 @@ class BaseArchive {
 public:
     BaseArchive() = default;
 
-    bool compress_folder_single(fpath folderpath,fpath outpath);
+    bool compress_folder_single(fpath folderpath,fpath outpath,string pad = "");
     bool extract_archive_single(fpath archivepath,fpath folderpath);
 
     void add_entry(fpath relpath,BYTEARRAY stream);

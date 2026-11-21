@@ -334,7 +334,7 @@ static void recurse_folders(fpath f,vector<fpath> &entries) {
         entries.push_back(s);
     }
 }
-bool BaseArchive::compress_folder_single(fpath folderpath,fpath outpath) {
+bool BaseArchive::compress_folder_single(fpath folderpath,fpath outpath,string pad) {
     _entries.clear();
 
     vector<fpath> entries;
@@ -344,7 +344,8 @@ bool BaseArchive::compress_folder_single(fpath folderpath,fpath outpath) {
         fpath rel = e.relative(folderpath);
         try {
             BYTEARRAY data = cbu::require_file_binary_path(e);
-            add_entry(rel,data);
+            if (pad.empty()) add_entry(rel,data);
+            else add_entry(fpath(pad) / rel,data);
         } catch (...) {
             cbu::log_error(false,std::format("Failed to read file {}",e));
             return false;
