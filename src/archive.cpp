@@ -17,16 +17,21 @@ namespace {
     }
 
     static void strip_leading_dots(std::string& s) {
-        // Simple policy: remove leading "./" and leading '.' segments.
-        // ".hidden" will become "hidden" due to leading-dot removal.
-        while (s.size() >= 2 && s[0] == '.' && s[1] == '/') {
-            s.erase(s.begin()); // remove first '.'
+        // Remove leading "./" path prefixes and leading slashes,
+        // but preserve names such as ".hidden".
+        std::size_t pos = 0;
+
+        while (s.size() - pos >= 2 && s[pos] == '.' && s[pos + 1] == '/') {
+            pos += 2;
         }
-        while (!s.empty() && s.front() == '.') {
-            s.erase(s.begin());
+
+        while (pos < s.size() && s[pos] == '/') {
+            ++pos;
         }
-        while (!s.empty() && s.front() == '/') s.erase(s.begin());
+
+        s.erase(0, pos);
     }
+
 }
 
 bool BaseArchive::load_from_stream(BYTEARRAY stream) {
