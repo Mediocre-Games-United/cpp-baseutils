@@ -29,6 +29,67 @@ namespace {
     }
 }
 
+bool BaseArchive::load_from_stream(BYTEARRAY stream) {
+    archive* a = archive_read_new();
+    if (!a) {
+        cbu::log_error(false, "archive_read_new() failed");
+        return false;
+    }
+
+    set_filters(a);
+
+    int r = archive_read_open_memory(
+        a,
+        stream.empty() ? nullptr : stream.data(),
+                                     stream.size()
+    );
+
+    if (r != ARCHIVE_OK) {
+        const char* message = archive_error_string(a);
+        std::string err = message ? message : "unknown error";
+        archive_read_free(a);
+        cbu::log_error(false, "archive_read_open_memory() failed: " + err);
+        return false;
+    }
+
+    cbu::log_verbose("Beginning to read from archive");
+    archive_entry* entry = nullptr;
+
+    while (true) {
+        int nr = archive_read_next_header(a, &entry);
+        if (nr == ARCHIVE_EOF) {
+            cbu::log_verbose("Reached archive EOF");
+            break;
+        }
+
+        if (nr != ARCHIVE_OK) {
+            const char* message = archive_error_string(a);
+            std::string err = message ? message : "unknown error";
+            archive_read_close(a);
+            archive_read_free(a);
+            cbu::log_error(false, "archive_read_next_header() failed: " + err);
+            return false;
+        }
+
+        const char* rawPathname = entry ? archive_entry_pathname(entry) : nullptr;
+        cbu::log_verbose(std::string("load_from_stream(): found entry header: pathname=") +
+        (rawPathname ? rawPathname : "(null)"));
+
+        struct entry et;
+        if (!read_entry_from_archive(a, entry, &et)) {
+            archive_read_close(a);
+            archive_read_free(a);
+            cbu::log_error(false, "Failed reading an entry");
+            return false;
+        }
+
+        _entries[et.rel] = et;
+    }
+
+    archive_read_close(a);
+    archive_read_free(a);
+    return true;
+}
 bool BaseArchive::load_from_file(fpath apath) {
     archive* a = archive_read_new();
     _archive_path = apath;
@@ -314,13 +375,23 @@ BYTEARRAY BaseArchive::get_entry(fpath relpath) {
 
 
 void ArchiveTarGZ::set_filters(archive *a) {
-    cbu::log_verbose("configuring archive reader: filter=gzip, format=gnutar");
+    cbu::log_verbose("configuring archive: filter=gzip, format=gnutar");
     archive_read_support_filter_gzip(a);
     archive_read_support_format_tar(a);
 }
+void ArchiveTarXZ::set_filters(archive *a) {
+    cbu::log_verbose(std::format("configuring archive: filter=xz, level={}, format=gnutar",lvl));
+    archive_read_support_filter_xz(a);
+    archive_write_set_options(a,std::format("xz:compression-level={}",lvl).c_str());
+    archive_read_support_format_tar(a);
+}
 void ArchiveZIP::set_filters(archive *a) {
-    cbu::log_verbose("configuring archive reader: format=zip");
+    cbu::log_verbose("configuring archive: format=zip");
     archive_read_support_format_zip(a);
+}
+void ArchiveTar::set_filters(archive *a) {
+    cbu::log_verbose("configuring archive: format=gnutar");
+    archive_read_support_format_tar(a);
 }
 
 static void recurse_folders(fpath f,vector<fpath> &entries) {
