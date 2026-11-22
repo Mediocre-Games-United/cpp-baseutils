@@ -25,6 +25,15 @@ public:
 
     bool save_to_file(fpath apath);
     bool load_from_file(fpath apath);
+
+    inline vector<fpath> get_entries() {
+        vector<fpath> list;
+        for (auto [rel,et] : _entries) {
+            list.push_back(rel);
+        }
+
+        return list;
+    }
 private:
     struct entry {
         bool exists = false;
