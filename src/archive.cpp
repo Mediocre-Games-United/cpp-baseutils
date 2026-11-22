@@ -36,7 +36,7 @@ bool BaseArchive::load_from_stream(BYTEARRAY stream) {
         return false;
     }
 
-    set_filters(a);
+    set_read_filters(a);
 
     int r = archive_read_open_memory(
         a,
@@ -97,7 +97,7 @@ bool BaseArchive::load_from_file(fpath apath) {
         cbu::log_error(false, "archive_read_new() failed");
         return false;
     }
-    set_filters(a);
+    set_read_filters(a);
 
     int r = archive_read_open_filename(a,apath,10240);
     if (r != ARCHIVE_OK) {
@@ -164,7 +164,7 @@ bool BaseArchive::save_to_file(fpath tpath) {
                                   return {};
                               }
 
-                              set_filters(a);
+                              set_write_filters(a);
 
                               // Use libarchive memory-backed output via callbacks
                               int r = archive_write_open2(a, &vo, nullptr, vectorWrite, nullptr, NULL);
@@ -369,32 +369,47 @@ BYTEARRAY BaseArchive::get_entry(fpath relpath) {
 }
 
 
-void ArchiveTarGZ::set_filters(archive *a) {
-    cbu::log_verbose("configuring archive: filter=gzip, format=gnutar");
+void ArchiveTarGZ::set_read_filters(archive *a) {
+    cbu::log_verbose("read archive: filter=gzip, format=gnutar");
+
     archive_read_support_filter_gzip(a);
     archive_read_support_format_tar(a);
+}
+void ArchiveTarGZ::set_write_filters(archive *a) {
+    cbu::log_verbose("write archive: filter=gzip, format=gnutar");
 
     archive_write_add_filter_gzip(a);
     archive_write_set_format_gnutar(a);
 }
-void ArchiveTarXZ::set_filters(archive *a) {
-    cbu::log_verbose(std::format("configuring archive: filter=xz, level={}, format=gnutar",lvl));
+void ArchiveTarXZ::set_read_filters(archive *a) {
+    cbu::log_verbose(std::format("read archive: filter=xz, level={}, format=gnutar",lvl));
     archive_read_support_filter_xz(a);
-    archive_write_set_options(a,std::format("xz:compression-level={}",lvl).c_str());
     archive_read_support_format_tar(a);
+
+    archive_read_set_options(a,std::format("xz:compression-level={}",lvl).c_str());
+}
+void ArchiveTarXZ::set_write_filters(archive *a) {
+    cbu::log_verbose(std::format("write archive: filter=xz, level={}, format=gnutar",lvl));
 
     archive_write_add_filter_xz(a);
     archive_write_set_format_gnutar(a);
-}
-void ArchiveZIP::set_filters(archive *a) {
-    cbu::log_verbose("configuring archive: format=zip");
-    archive_read_support_format_zip(a);
 
+    archive_write_set_options(a,std::format("xz:compression-level={}",lvl).c_str());
+}
+void ArchiveZIP::set_read_filters(archive *a) {
+    cbu::log_verbose("read archive: format=zip");
+    archive_read_support_format_zip(a);
+}
+void ArchiveZIP::set_write_filters(archive *a) {
+    cbu::log_verbose("write archive: format=zip");
     archive_write_set_format_zip(a);
 }
-void ArchiveTar::set_filters(archive *a) {
-    cbu::log_verbose("configuring archive: format=gnutar");
+void ArchiveTar::set_read_filters(archive *a) {
+    cbu::log_verbose("read archive: format=gnutar");
     archive_read_support_format_tar(a);
+}
+void ArchiveTar::set_write_filters(archive *a) {
+    cbu::log_verbose("write archive: format=gnutar");
 
     archive_write_set_format_gnutar(a);
 }

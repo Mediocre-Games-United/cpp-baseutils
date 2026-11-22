@@ -32,7 +32,8 @@ private:
         fpath rel;
         mode_t perm;
     };
-    virtual void set_filters(archive *a) = 0;
+    virtual void set_read_filters(archive *a) = 0;
+    virtual void set_write_filters(archive *a) = 0;
     bool read_entry_from_archive(archive *a,archive_entry *entry,struct entry *out);
     bool write_entry_to_archive(archive *a,fpath relpath,struct entry in);
 
@@ -44,26 +45,30 @@ class ArchiveTarGZ : public BaseArchive {
 public:
 
 private:
-    void set_filters(archive *a) override;
+    void set_read_filters(archive *a) override;
+    void set_write_filters(archive *a) override;
 };
 class ArchiveTarXZ : public BaseArchive {
 public:
     ArchiveTarXZ(U8 lvl) : lvl(lvl) {}
 private:
     U8 lvl;
-    void set_filters(archive *a) override;
+    void set_read_filters(archive *a) override;
+    void set_write_filters(archive *a) override;
 };
 class ArchiveZIP : public BaseArchive {
 public:
 
 private:
-    void set_filters(archive *a) override;
+    void set_read_filters(archive *a) override;
+    void set_write_filters(archive *a) override;
 };
 class ArchiveTar : public BaseArchive {
 public:
 
 private:
-    void set_filters(archive *a) override;
+    void set_read_filters(archive *a) override;
+    void set_write_filters(archive *a) override;
 };
 
 
