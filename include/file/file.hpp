@@ -151,6 +151,49 @@ struct std::hash<fpath> {
 };
 
 namespace cbu {
+    #ifdef _WIN32
+    inline fpath knownFolderPath(REFKNOWNFOLDERID folderId) {
+        PWSTR rawPath = nullptr;
+        const HRESULT hr = SHGetKnownFolderPath(folderId, KF_FLAG_DEFAULT, nullptr, &rawPath);
+        if (FAILED(hr)) {
+            throw std::runtime_error("Could not locate a Windows known folder");
+        }
+
+        fpath path(rawPath);
+        CoTaskMemFree(rawPath);
+        return path;
+    }
+    #endif
+    inline fpath get_local_install_path(string name) {
+        #ifdef _WIN32
+        fpath localAppData = knownFolderPath(FOLDERID_LocalAppData);
+
+        return localAppData / "Programs" / name;
+        #else
+        const char* home = std::getenv("HOME");
+        if (!home || !*home) {
+            throw std::runtime_error("HOME is not set");
+        }
+
+        fpath hpath{home};
+        return hpath / "Applications" / name;
+        #endif
+    }
+    inline fpath get_local_lnk_path() {
+        #ifdef _WIN32
+        return knownFolderPath(FOLDERID_Programs);
+        #else
+
+        const char* home = std::getenv("HOME");
+        if (!home || !*home) {
+            throw std::runtime_error("HOME is not set");
+        }
+
+        fpath hpath{home};
+        return hpath / ".local/share/applications";
+#endif
+    }
+
     static fpath get_userdata_dir() {
         static const fpath k = []() -> fpath {
             #ifdef _WIN32
