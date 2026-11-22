@@ -164,12 +164,7 @@ bool BaseArchive::save_to_file(fpath tpath) {
                                   return {};
                               }
 
-                              // Explicitly log compression + container format choices.
-                              cbu::log_verbose("write_to_bytes_safe(): set format = gnutar");
-                              cbu::log_verbose("write_to_bytes_safe(): set filter  = gzip");
-
-                              archive_write_set_format_gnutar(a);
-                              archive_write_add_filter_gzip(a);
+                              set_filters(a);
 
                               // Use libarchive memory-backed output via callbacks
                               int r = archive_write_open2(a, &vo, nullptr, vectorWrite, nullptr, NULL);
@@ -378,20 +373,30 @@ void ArchiveTarGZ::set_filters(archive *a) {
     cbu::log_verbose("configuring archive: filter=gzip, format=gnutar");
     archive_read_support_filter_gzip(a);
     archive_read_support_format_tar(a);
+
+    archive_write_add_filter_gzip(a);
+    archive_write_set_format_gnutar(a);
 }
 void ArchiveTarXZ::set_filters(archive *a) {
     cbu::log_verbose(std::format("configuring archive: filter=xz, level={}, format=gnutar",lvl));
     archive_read_support_filter_xz(a);
     archive_write_set_options(a,std::format("xz:compression-level={}",lvl).c_str());
     archive_read_support_format_tar(a);
+
+    archive_write_add_filter_xz(a);
+    archive_write_set_format_gnutar(a);
 }
 void ArchiveZIP::set_filters(archive *a) {
     cbu::log_verbose("configuring archive: format=zip");
     archive_read_support_format_zip(a);
+
+    archive_write_set_format_zip(a);
 }
 void ArchiveTar::set_filters(archive *a) {
     cbu::log_verbose("configuring archive: format=gnutar");
     archive_read_support_format_tar(a);
+
+    archive_write_set_format_gnutar(a);
 }
 
 static void recurse_folders(fpath f,vector<fpath> &entries) {
