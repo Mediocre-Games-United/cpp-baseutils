@@ -9,6 +9,7 @@
 #include <format>
 #include <type_traits>
 #include "other_types.hpp"
+#include "compress.hpp"
 
 namespace cbu {
     namespace binary_detail {
@@ -774,9 +775,17 @@ namespace cbu {
 
         virtual BinaryFileSection *get_sections() = 0;
     };
+    enum class BinaryCompressionFormat : U8 {
+        FORMAT_NONE = 0,
+        FORMAT_GZ = 1,
+        FORMAT_XZ_MID = 2,
+        FORMAT_XZ_MAX = 3
+    };
     class BinaryFileFormat {
     public:
-        BinaryFileFormat(std::vector<BinaryFileVersion*> v,string e) : versions(v), latest_version(v.size() - 1), ext(cbu::StringName(e.to_uppercase())) {};
+        BinaryFileFormat(std::vector<BinaryFileVersion*> v,string e,
+                         BinaryCompressionFormat file_compression = BinaryCompressionFormat::FORMAT_NONE
+                         ) : versions(v), latest_version(v.size() - 1), ext(cbu::StringName(e.to_uppercase())), file_compression(file_compression) {};
         ~BinaryFileFormat() {
             for (size_t i = 0; i < versions.size(); i ++) {
                 delete versions[i];
@@ -810,20 +819,79 @@ namespace cbu {
 
             delete sections;
         }
-        inline void load_file_to_buffer(std::filesystem::path fpath) {
+        inline int load_file_to_buffer(fpath fpath,SZ compression_buffer_size = 1024 * 1024) {
+            BYTEARRAY stream;
             try {
-                obj_data = require_file_binary_path(fpath);
+                stream = require_file_binary_path(fpath);
             } catch (...) {
-                obj_data.clear();
+                return 1;
             }
+
+            try {
+                switch (file_compression) {
+                    case cbu::BinaryCompressionFormat::FORMAT_NONE: {
+                        obj_data = stream;
+
+                        break;
+                    }
+                    case cbu::BinaryCompressionFormat::FORMAT_GZ: {
+                        obj_data = compress::gz::decompress(stream,compression_buffer_size);
+
+                        break;
+                    }
+                    case cbu::BinaryCompressionFormat::FORMAT_XZ_MID:
+                    case cbu::BinaryCompressionFormat::FORMAT_XZ_MAX: {
+                        obj_data = compress::xz::decompress(stream,compression_buffer_size);
+
+                        break;
+                    }
+                }
+            } catch (compress::error &err) {
+                cbu::log_error(false,err.what());
+                return 1;
+            }
+
+            return 0;
         }
-        inline int save_buffer_to_file(std::filesystem::path fpath) {
-            write_to_file_safe_binary(fpath,obj_data);
+        inline int save_buffer_to_file(fpath fpath) {
+            BYTEARRAY stream{};
+
+            try {
+                switch (file_compression) {
+                    case cbu::BinaryCompressionFormat::FORMAT_NONE: {
+                        stream = obj_data;
+
+                        break;
+                    }
+                    case cbu::BinaryCompressionFormat::FORMAT_GZ: {
+                        stream = compress::gz::compress(obj_data);
+
+                        break;
+                    }
+                    case cbu::BinaryCompressionFormat::FORMAT_XZ_MID: {
+                        stream = compress::xz::compress(obj_data);
+
+                        break;
+                    }
+                    case cbu::BinaryCompressionFormat::FORMAT_XZ_MAX: {
+                        stream = compress::xz::compress(obj_data,9);
+
+                        break;
+                    }
+                }
+            } catch (compress::error &err) {
+                cbu::log_error(false,err.what());
+                return 1;
+            }
+            write_to_file_safe_binary(fpath,stream);
 
             return 0;
         }
         cbu::StringName ext;
 
         BYTEARRAY obj_data;
+
+    private:
+        BinaryCompressionFormat file_compression;
     };
 }

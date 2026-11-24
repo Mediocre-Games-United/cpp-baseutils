@@ -8,12 +8,13 @@
 #include "file.hpp"
 #include <map>
 #include <filesystem>
+#include <stdexcept>
 
 #include <sys/types.h>
 
 class BaseArchive {
 public:
-    BaseArchive() = default;
+    BaseArchive() {}
 
     bool compress_folder_single(fpath folderpath,fpath outpath,string pad = "");
     bool extract_archive_single(fpath archivepath,fpath folderpath);
@@ -59,7 +60,9 @@ private:
 };
 class ArchiveTarXZ : public BaseArchive {
 public:
-    ArchiveTarXZ(U8 lvl) : lvl(lvl) {}
+    ArchiveTarXZ(U8 lvl) : lvl(lvl) {
+        if (lvl > 9) throw std::overflow_error("XZ Compression level cannot be higher than 9");
+    }
 private:
     U8 lvl;
     void set_read_filters(archive *a) override;
