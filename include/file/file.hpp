@@ -86,6 +86,9 @@ namespace cbu {
         operator const char *() const {
             return copy;
         }
+        const char *c_str() const {
+            return copy;
+        }
 
         bool empty() const {
             return p.empty();

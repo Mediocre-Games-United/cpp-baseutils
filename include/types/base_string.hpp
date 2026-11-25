@@ -106,6 +106,9 @@ namespace cbu {
         operator const char *() const {
             return copy.c_str();
         }
+        const char *c_str() const {
+            return copy.c_str();
+        }
 
 
         struct error {
