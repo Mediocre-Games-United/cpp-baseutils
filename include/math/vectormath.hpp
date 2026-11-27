@@ -192,6 +192,37 @@ namespace cbu {
         FODList<obj,depth> list{};
     };
 
+    // fast object list
+    template<typename obj>
+    class FOList {
+    public:
+        inline void insert(obj i) {
+            i._fo_index = _list.size();
+            _list.push_back(i);
+        }
+        inline void remove(obj i) {
+            remove(i._fo_index);
+        }
+        inline void remove(SZ i) {
+            if (i >= _list.size()) return;
+
+            _list[i] = _list.back();
+            _list.pop_back();
+        }
+        inline bool empty() const {
+            return _list.empty();
+        }
+        inline SZ size() const {
+            return _list.size();
+        }
+
+        void foreach(func<void(obj&)> cb) {
+            for (obj &i : _list) cb(i);
+        }
+    private:
+        vector<obj> _list;
+    };
+
 
     inline void draw_line(S64 x0, S64 y0,
                   S64 x1, S64 y1,
