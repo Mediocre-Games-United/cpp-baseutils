@@ -114,6 +114,9 @@ namespace cbu {
         bool is_absolute() const {
             return p.is_absolute();
         }
+        bool exists() const {
+            return std::filesystem::exists(p);
+        }
 
         fpath relative(fpath base) const {
             return std::filesystem::relative(p,base.p);
